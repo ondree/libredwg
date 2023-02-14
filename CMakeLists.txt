@@ -157,7 +157,7 @@ set(libredwg_SOURCES
     ${outjson_SOURCES}
     src/out_dxfb.c
     ${write_SOURCES}
-    src/print.c)
+    src/print.c src/deskbot_reader.c src/deskbot_reader.h src/lists.c src/lists.h src/deskbot_printer.c src/deskbot_printer.h)
 
 add_library(redwg
     ${libredwg_HEADERS}
@@ -174,7 +174,7 @@ target_include_directories(redwg PUBLIC
 link_libraries(redwg -lm ${CMAKE_THREAD_LIBS_INIT})
 
 if(NOT LIBREDWG_LIBONLY)
-  set(executables_TARGETS dwgread dwg2dxf dwggrep dwglayers dwgbmp dwg2SVG)
+  set(executables_TARGETS dwgread dwgread_test dwg2dxf dwggrep dwglayers dwgbmp dwg2SVG)
   add_executable(dwgread programs/dwgread.c)
   add_executable(dwg2dxf programs/dwg2dxf.c)
   if(NOT LIBREDWG_DISABLE_WRITE)
@@ -185,6 +185,7 @@ if(NOT LIBREDWG_LIBONLY)
   endif(NOT LIBREDWG_DISABLE_WRITE)
   add_executable(dwggrep programs/dwggrep.c)
   add_executable(dwglayers programs/dwglayers.c)
+  add_executable(dwgread_test programs/dwgread_test.c src/deskbot_reader.c)
   add_executable(dwgbmp programs/dwgbmp.c)
   add_executable(dwg2SVG programs/dwg2SVG.c
                          programs/escape.c programs/geom.c)
