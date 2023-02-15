@@ -8,22 +8,22 @@
 static void
 printPolygonData (PolygonList polygonList)
 {
-  fprintf (stdout, "----- POLYGON COUNT %zu  \n", polygonList.used);
+  fprintf (stdout, "-- POLYGON COUNT %zu  \n", polygonList.used);
   {
 
     for (int i = 0; i < polygonList.used; i++)
       {
         Polygon polygon = polygonList.array[i];
         fprintf (stdout,
-                 "----- POLYGON LAYER layer[%s] rotation[%f] owner[" FORMAT_H
-                 "] \n",
-                 polygon.layerName, polygon.rotation,
+                 "---- POLYGON layer[%s] rotation[%f] handle [" FORMAT_H
+                 "] owner[" FORMAT_H "] \n",
+                 polygon.layerName, polygon.rotation, ARGS_H (polygon.handle),
                  ARGS_H (polygon.ownerHandle));
 
         for (int k = 0; k < polygon.pointCount; k++)
           {
             BITCODE_2BD point = polygon.points[k];
-            fprintf (stdout, "----- POINT [x:%f,y:%f] \n", point.x, point.y);
+            fprintf (stdout, "------- POINT [x:%f,y:%f] \n", point.x, point.y);
           }
       }
   }
@@ -32,29 +32,94 @@ printPolygonData (PolygonList polygonList)
 static void
 printRoomData (Room room)
 {
-  fprintf (stdout, "-- ROOM name[%s] id[%s] path[%s]\n", room.attribute.name,
-           room.attribute.id, room.attribute.path);
+  fprintf (stdout, "\nROOM name[%s] id[%s] path[%s] block[%s]\n",
+           room.attribute.name, room.attribute.id, room.attribute.path,
+           room.attribute.blockName);
   printPolygonData (room.polygons);
 }
 
 static void
 printSeatData (Seat seat)
 {
-  fprintf (stdout, "-- SEAT name[%s] id[%s] path[%s]\n", seat.attribute.name,
-           seat.attribute.id, seat.attribute.path);
+  fprintf (stdout, "\nSEAT name[%s] id[%s] path[%s] block[%s]\n",
+           seat.attribute.name, seat.attribute.id, seat.attribute.path,
+           seat.attribute.blockName);
   printPolygonData (seat.polygons);
 }
 
 void
-printDeskbotData (DeskbotData deskbotData)
+printDeskbotData (DeskbotData data)
 {
-  for (int i = 0; i < deskbotData.rooms.used; i++)
+  for (int i = 0; i < data.rooms.used; i++)
     {
-      printRoomData (deskbotData.rooms.array[i]);
+      printRoomData (data.rooms.array[i]);
     }
 
-  for (int i = 0; i < deskbotData.seats.used; i++)
+  for (int i = 0; i < data.seats.used; i++)
     {
-      printSeatData (deskbotData.seats.array[i]);
+      printSeatData (data.seats.array[i]);
+    }
+}
+
+void
+printRoomCSV (Room room)
+{
+  for (int i = 0; i < room.polygons.used; i++)
+    {
+      Polygon polygon = room.polygons.array[i];
+
+      for (int k = 0; k < polygon.pointCount; k++)
+        {
+          BITCODE_2BD point = polygon.points[k];
+          int order = k + 1;
+          char *enabled = "false";
+          int capacity = 0;
+          char *placeType = "ROOM";
+          char *placeName = room.attribute.name;
+          char *equipment = "[]";
+          fprintf (stdout, "%s,%d,%f,%f,%s,%s,%s,%s,%d,%s\n", placeName, order,
+                   point.x, point.y, enabled, room.attribute.path,
+                   room.attribute.id, placeType, capacity, equipment);
+        }
+      // Check only first item
+      return;
+    }
+}
+
+void
+printSeatCSV (Seat seat)
+{
+  for (int i = 0; i < seat.polygons.used; i++)
+    {
+      Polygon polygon = seat.polygons.array[i];
+      if (polygon.pointCount == 4)
+        {
+          // Insert point is stored as second item
+          int insertPointIndex = 1;
+          BITCODE_2BD point = polygon.points[insertPointIndex];
+          char *enabled = "false";
+          char *equipment = "[]";
+          fprintf (stdout, "%s,%f,%f,%f,%s,%s,%s\n", enabled, polygon.rotation,
+                   point.x, point.y, seat.attribute.path, seat.attribute.name,
+                   equipment);
+        }
+    }
+}
+
+void
+printCSV (DeskbotData data)
+{
+  fprintf (stdout, "Description,order,x,y,enabled,path,name,placeType,"
+                   "capacity,equipment\n");
+  for (int i = 0; i < data.rooms.used; i++)
+    {
+      printRoomCSV (data.rooms.array[i]);
+    }
+
+  fprintf (stdout, "\n\n\n");
+  fprintf (stdout, "enabled,rotation,xpos,ypos,path,name,equipment\n");
+  for (int i = 0; i < data.seats.used; i++)
+    {
+      printSeatCSV (data.seats.array[i]);
     }
 }

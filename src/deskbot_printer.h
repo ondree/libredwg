@@ -10,4 +10,5 @@
 #endif // LIBREDWG_DESKBOT_PRINTER_H
 
 // TODO change output format?
-void printDeskbotData (DeskbotData deskbotData);
+void printDeskbotData (DeskbotData data);
+void printCSV(DeskbotData data);

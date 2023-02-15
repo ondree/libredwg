@@ -15,6 +15,7 @@ typedef struct polygon
   BITCODE_BL pointCount;
   BITCODE_RD rotation;
   Dwg_Handle ownerHandle;
+  Dwg_Handle handle;
   char *layerName;
 } Polygon;
 
@@ -27,7 +28,8 @@ typedef struct deskbot_attribute
 {
   char *id;
   char *name;
-  char *path
+  char *path;
+  char *blockName;
 } Attribute;
 
 typedef struct

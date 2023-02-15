@@ -96,7 +96,11 @@ countRotation (Polygon polygon, BITCODE_3BD insertPoint)
                     - (point1.x + insertPoint.x) / 100;
       double difY = (point4.y + insertPoint.y) / 100
                     - (point1.y + insertPoint.y) / 100;
-      return atan2 (difY, difX) * (180 / M_PI);
+      double rotation = atan2 (difY, difX) * (180 / M_PI);
+      if (rotation < 0)
+        return rotation + 360;
+      else
+        return rotation;
     }
   else
     return 0;
@@ -104,7 +108,7 @@ countRotation (Polygon polygon, BITCODE_3BD insertPoint)
 
 static void
 loadVertex (Dwg_Entity_POLYLINE_2D *entity, PolygonList *polygonList,
-            DeskbotInsert insert)
+            DeskbotInsert insert, Dwg_Handle handle)
 {
   BITCODE_2BD *points = malloc (entity->num_owned * sizeof (BITCODE_2BD));
   for (int i = 0; i < entity->num_owned; i++)
@@ -119,6 +123,7 @@ loadVertex (Dwg_Entity_POLYLINE_2D *entity, PolygonList *polygonList,
     }
   Polygon polygon;
   polygon.ownerHandle = entity->parent->ownerhandle->handleref;
+  polygon.handle = handle;
   polygon.points = points;
   polygon.pointCount = entity->num_owned;
   polygon.layerName = entity->parent->layer->obj->tio.object->tio.LAYER->name;
@@ -171,13 +176,18 @@ loadPolyLines (Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonList,
   for (int j = 0; j < header->num_owned; j++)
     {
       Dwg_Object *ownerObj = header->entities[j]->obj;
-
-      if (ownerObj->fixedtype == DWG_TYPE_POLYLINE_2D)
+      switch (ownerObj->fixedtype)
         {
-          Dwg_Entity_POLYLINE_2D *entity
-              = ownerObj->tio.entity->tio.POLYLINE_2D;
-          if (layerNamesWithPrefix (*entity, seatLayer, roomLayer) == 1)
-            loadVertex (entity, polygonList, insert);
+        case DWG_TYPE_POLYLINE_2D:
+          {
+            Dwg_Entity_POLYLINE_2D *entity
+                = ownerObj->tio.entity->tio.POLYLINE_2D;
+            if (layerNamesWithPrefix (*entity, seatLayer, roomLayer) == 1)
+              loadVertex (entity, polygonList, insert, ownerObj->handle);
+          }
+          break;
+        default:
+          break;
         }
     }
 }
@@ -188,7 +198,10 @@ loadDeskbotData (Dwg_Data *data, const char *seatLayer, const char *roomLayer)
   DeskbotData deskbotData;
   initRoomList (&deskbotData.rooms, 5);
   initSeatList (&deskbotData.seats, 5);
-
+  BITCODE_BD xMinVertex = 0;
+  BITCODE_BD xMaxVertex = 0;
+  BITCODE_BD yMinVertex = 0;
+  BITCODE_BD yMaxVertex = 0;
   for (int i = 0; i < data->num_objects; i++)
     {
       Dwg_Object obj = data->object[i];
@@ -201,8 +214,9 @@ loadDeskbotData (Dwg_Data *data, const char *seatLayer, const char *roomLayer)
               Dwg_Entity_INSERT *insertEntity
                   = header->inserts[0]->obj->tio.entity->tio.INSERT;
               PolygonList polygonList;
-              initPolygonList (&polygonList, 1);
+              initPolygonList (&polygonList, 10);
               Attribute attribute;
+              attribute.blockName = header->name;
               DeskbotInsert insert;
               loadAttributes (data, insertEntity, &insert, &attribute);
               loadPolyLines (header, &polygonList, seatLayer, roomLayer,
@@ -210,8 +224,29 @@ loadDeskbotData (Dwg_Data *data, const char *seatLayer, const char *roomLayer)
               insertData (&deskbotData, &attribute, &polygonList);
             }
         }
+      if (obj.fixedtype == DWG_TYPE_VERTEX_2D)
+        {
+          Dwg_Entity_VERTEX_2D *vertex = obj.tio.entity->tio.VERTEX_2D;
+          if (xMinVertex > vertex->point.x)
+            {
+              xMinVertex = vertex->point.x;
+            }
+          if (xMaxVertex < vertex->point.x)
+            {
+              xMaxVertex = vertex->point.x;
+            }
+          if (yMinVertex > vertex->point.y)
+            {
+              yMinVertex = vertex->point.y;
+            }
+          if (yMaxVertex < vertex->point.y)
+            {
+              yMaxVertex = vertex->point.y;
+            }
+        }
     }
-  printDeskbotData (deskbotData);
+  printCSV (deskbotData);
+  data->header_vars.EXTMAX.x = 0;
   freeRoomList (&deskbotData.rooms);
   freeSeatList (&deskbotData.seats);
 }
