@@ -157,7 +157,7 @@ set(libredwg_SOURCES
     ${outjson_SOURCES}
     src/out_dxfb.c
     ${write_SOURCES}
-    src/print.c src/deskbot_reader.c src/deskbot_reader.h src/lists.c src/lists.h src/deskbot_printer.c src/deskbot_printer.h)
+    src/print.c src/deskbot_reader.c src/deskbot_reader.h src/lists.c src/lists.h src/deskbot_printer.c src/deskbot_printer.h src/dwg_bounding_box.h src/dwg_bounding_box.c)
 
 add_library(redwg
     ${libredwg_HEADERS}

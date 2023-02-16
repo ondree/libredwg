@@ -20,6 +20,7 @@
 #    include "deskbot_reader.h"
 #    include "bits.h"
 #    include "deskbot_printer.h"
+#    include "dwg_bounding_box.h"
 
 #  endif
 #endif
@@ -92,11 +93,9 @@ countRotation (Polygon polygon, BITCODE_3BD insertPoint)
     {
       BITCODE_2BD point1 = polygon.points[0];
       BITCODE_2BD point4 = polygon.points[3];
-      double difX = (point4.x + insertPoint.x) / 100
-                    - (point1.x + insertPoint.x) / 100;
-      double difY = (point4.y + insertPoint.y) / 100
-                    - (point1.y + insertPoint.y) / 100;
-      double rotation = atan2 (difY, difX) * (180 / M_PI);
+      double difX = point4.x - point1.x;
+      double difY = point4.y - point1.y;
+      double rotation = -atan2 (difY, difX) * (180 / M_PI);
       if (rotation < 0)
         return rotation + 360;
       else
@@ -107,18 +106,22 @@ countRotation (Polygon polygon, BITCODE_3BD insertPoint)
 }
 
 static void
-loadVertex (Dwg_Entity_POLYLINE_2D *entity, PolygonList *polygonList,
-            DeskbotInsert insert, Dwg_Handle handle)
+loadVertex (Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
+            PolygonList *polygonList, DeskbotInsert insert, Dwg_Handle handle)
 {
   BITCODE_2BD *points = malloc (entity->num_owned * sizeof (BITCODE_2BD));
+  BITCODE_3BD min = data->header_vars.EXTMIN;
+  BITCODE_3BD max = data->header_vars.EXTMAX;
   for (int i = 0; i < entity->num_owned; i++)
     {
       Dwg_Object *object = entity->vertex[i]->obj;
       Dwg_Entity_VERTEX_2D *vertex = object->tio.entity->tio.VERTEX_2D;
       if (vertex != NULL)
         {
-          points[i].x = (vertex->point.x + insert.insertPoint.x) / 100;
-          points[i].y = (vertex->point.y + insert.insertPoint.y) / 100;
+          // calculate coordinates for Deskbot, needs to invert Y values
+          points[i].x = (vertex->point.x + insert.insertPoint.x - min.x) / 100;
+          points[i].y
+              = (max.y - (vertex->point.y + insert.insertPoint.y)) / 100;
         }
     }
   Polygon polygon;
@@ -142,15 +145,15 @@ loadAttribute (Dwg_Data *data, Dwg_Entity_ATTRIB *entity, Attribute *attribute)
     char *tagValue = entityTextValue (data, entity->tag);
     if (strcmp (tagValue, ATTRIBUTE_ID) == 0)
       {
-        attribute->id = entity->text_value;
+        attribute->id = entityTextValue (data, entity->text_value);
       }
     else if (strcmp (tagValue, ATTRIBUTE_NAME) == 0)
       {
-        attribute->name = entity->text_value;
+        attribute->name = entityTextValue (data, entity->text_value);
       }
     else if (strcmp (tagValue, ATTRIBUTE_PATH) == 0)
       {
-        attribute->path = entity->text_value;
+        attribute->path = entityTextValue (data, entity->text_value);
       }
   }
 }
@@ -171,7 +174,7 @@ loadAttributes (Dwg_Data *data, Dwg_Entity_INSERT *insertEntity,
 static void
 loadPolyLines (Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonList,
                const char *seatLayer, const char *roomLayer,
-               DeskbotInsert insert)
+               DeskbotInsert insert, Dwg_Data *data)
 {
   for (int j = 0; j < header->num_owned; j++)
     {
@@ -183,7 +186,7 @@ loadPolyLines (Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonList,
             Dwg_Entity_POLYLINE_2D *entity
                 = ownerObj->tio.entity->tio.POLYLINE_2D;
             if (layerNamesWithPrefix (*entity, seatLayer, roomLayer) == 1)
-              loadVertex (entity, polygonList, insert, ownerObj->handle);
+              loadVertex (data, entity, polygonList, insert, ownerObj->handle);
           }
           break;
         default:
@@ -195,13 +198,11 @@ loadPolyLines (Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonList,
 void
 loadDeskbotData (Dwg_Data *data, const char *seatLayer, const char *roomLayer)
 {
+  forceBoundingBoxForData (data, "080202_BEAUGEB_AWAND");
   DeskbotData deskbotData;
   initRoomList (&deskbotData.rooms, 5);
   initSeatList (&deskbotData.seats, 5);
-  BITCODE_BD xMinVertex = 0;
-  BITCODE_BD xMaxVertex = 0;
-  BITCODE_BD yMinVertex = 0;
-  BITCODE_BD yMaxVertex = 0;
+
   for (int i = 0; i < data->num_objects; i++)
     {
       Dwg_Object obj = data->object[i];
@@ -220,33 +221,12 @@ loadDeskbotData (Dwg_Data *data, const char *seatLayer, const char *roomLayer)
               DeskbotInsert insert;
               loadAttributes (data, insertEntity, &insert, &attribute);
               loadPolyLines (header, &polygonList, seatLayer, roomLayer,
-                             insert);
+                             insert, data);
               insertData (&deskbotData, &attribute, &polygonList);
-            }
-        }
-      if (obj.fixedtype == DWG_TYPE_VERTEX_2D)
-        {
-          Dwg_Entity_VERTEX_2D *vertex = obj.tio.entity->tio.VERTEX_2D;
-          if (xMinVertex > vertex->point.x)
-            {
-              xMinVertex = vertex->point.x;
-            }
-          if (xMaxVertex < vertex->point.x)
-            {
-              xMaxVertex = vertex->point.x;
-            }
-          if (yMinVertex > vertex->point.y)
-            {
-              yMinVertex = vertex->point.y;
-            }
-          if (yMaxVertex < vertex->point.y)
-            {
-              yMaxVertex = vertex->point.y;
             }
         }
     }
   printCSV (deskbotData);
-  data->header_vars.EXTMAX.x = 0;
   freeRoomList (&deskbotData.rooms);
   freeSeatList (&deskbotData.seats);
 }

@@ -55,6 +55,7 @@
 #include "escape.h"
 #include "geom.h"
 #include "suffix.inc"
+#include "dwg_bounding_box.h"
 
 static int opts = 0;
 static int mspace = 0; // only mspace, even when pspace is defined
@@ -814,6 +815,8 @@ output_BLOCK_HEADER (Dwg_Object_Ref *ref)
 static void
 output_SVG (Dwg_Data *dwg)
 {
+  //FORCE EXTMIN and EXTMAX definition
+  forceBoundingBoxForData (dwg, "080202_BEAUGEB_AWAND");
   BITCODE_BS i;
   int num = 0;
   Dwg_Object *obj;
@@ -851,8 +854,8 @@ output_SVG (Dwg_Data *dwg)
           "   xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n"
           "   version=\"1.1\" baseProfile=\"basic\"\n"
           "   width=\"100%%\" height=\"100%%\"\n"
-          "   viewBox=\"%f %f %f %f\">\n",
-          model_xmin, model_ymin, page_width, page_height);
+          "   viewBox=\"%d %d %f %f\">\n",
+          0, 0, page_width, page_height);
 
   if (!mspace && (ref = dwg_paper_space_ref (dwg)))
     num = output_BLOCK_HEADER (
