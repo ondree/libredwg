@@ -65,11 +65,11 @@ double page_width, page_height, scale;
 
 static void output_SVG (Dwg_Data *dwg);
 // Layer names what needs to be printed despite its actual visibility
-static char *forced_layers[]
-    = { "150504_CAFMFLA_AP", "0805010101_BESTAND_BEAUFLA_D277RAUMP" };
+static char *forced_layers[] = { "0805010101_BESTAND_BEAUFLA_D277RAUMP",
+                                 "15050403_CAFMFLA_AP_DESKSHARING" };
 static char *forced_color_tint = (char *)"black";
-bool force_custom_tint = true;
-bool force_override_printed_layer = true;
+bool force_custom_tint = false;
+bool force_override_printed_layer = false;
 
 static int
 usage (void)
@@ -688,12 +688,15 @@ output_INSERT (Dwg_Object *obj)
         return;
       transform_OCS (&ins_pt, insert->ins_pt, insert->extrusion);
       printf ("\t<!-- insert-%d -->\n", obj->index);
+      // TODO check how to calculate correct insert point, should we just simply invert y point?
+      double shiftX = ins_pt.x;
+      double shiftY = -ins_pt.y;
       printf ("\t<use id=\"dwg-object-%d\" transform=\"translate(%f %f) "
               "rotate(%f) scale(%f %f)\" xlink:href=\"#symbol-%lX\" />"
               "<!-- block_header->handleref: " FORMAT_H " -->\n",
-              obj->index, transform_X (ins_pt.x), transform_Y (ins_pt.y),
-              (180.0 / M_PI) * insert->rotation, insert->scale.x,
-              insert->scale.y, insert->block_header->absolute_ref,
+              obj->index, shiftX, shiftY, (180.0 / M_PI) * insert->rotation,
+              insert->scale.x, insert->scale.y,
+              insert->block_header->absolute_ref,
               ARGS_H (insert->block_header->handleref));
     }
   else
