@@ -224,3 +224,9 @@ compile_commands.json
 /include/dwg_api.h.bak
 /minisign.pub
 /cmake-build-debug/
+/build/
+.idea/*
+!.idea/.name
+!.idea/codeStyles
+!.idea/copyright
+!.idea/dictionaries

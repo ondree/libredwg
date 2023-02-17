@@ -62,7 +62,7 @@ printDeskbotData (DeskbotData data)
 }
 
 void
-printRoomCSV (Room room)
+printRoomCSV (FILE *roomFile, Room room)
 {
   for (int i = 0; i < room.polygons.used; i++)
     {
@@ -77,8 +77,8 @@ printRoomCSV (Room room)
           char *placeType = "ROOM";
           char *placeName = room.attribute.name;
           char *equipment = "[]";
-          fprintf (stdout, "%s,%d,%f,%f,%s,%s,%s,%s,%d,%s\n", placeName, order,
-                   point.x, point.y, enabled, room.attribute.path,
+          fprintf (roomFile, "%s,%d,%f,%f,%s,%s,%s,%s,%d,%s\n", placeName,
+                   order, point.x, point.y, enabled, room.attribute.path,
                    room.attribute.id, placeType, capacity, equipment);
         }
       // Check only first item
@@ -87,7 +87,7 @@ printRoomCSV (Room room)
 }
 
 void
-printSeatCSV (Seat seat)
+printSeatCSV (FILE *seatFile, Seat seat)
 {
   for (int i = 0; i < seat.polygons.used; i++)
     {
@@ -99,9 +99,9 @@ printSeatCSV (Seat seat)
           BITCODE_2BD point = polygon.points[insertPointIndex];
           char *enabled = "false";
           char *equipment = "[]";
-          fprintf (stdout, "%s,%f,%f,%f,%s,%s,%s\n", enabled, polygon.rotation,
-                   point.x, point.y, seat.attribute.path, seat.attribute.name,
-                   equipment);
+          fprintf (seatFile, "%s,%f,%f,%f,%s,%s,%s\n", enabled,
+                   polygon.rotation, point.x, point.y, seat.attribute.path,
+                   seat.attribute.name, equipment);
         }
     }
 }
@@ -109,17 +109,23 @@ printSeatCSV (Seat seat)
 void
 printCSV (DeskbotData data)
 {
-  fprintf (stdout, "Description,order,x,y,enabled,path,name,placeType,"
-                   "capacity,equipment\n");
-  for (int i = 0; i < data.rooms.used; i++)
+  FILE *roomFile = fopen ("rooms.csv", "w");
+  if (roomFile != NULL)
     {
-      printRoomCSV (data.rooms.array[i]);
+      fprintf (roomFile, "Description,order,x,y,enabled,path,name,placeType,"
+                         "capacity,equipment\n");
+      for (int i = 0; i < data.rooms.used; i++)
+        {
+          printRoomCSV (roomFile, data.rooms.array[i]);
+        }
     }
+  fclose (roomFile);
 
-  fprintf (stdout, "\n\n\n");
-  fprintf (stdout, "enabled,rotation,xpos,ypos,path,name,equipment\n");
+  FILE *seatFile = fopen ("seats.csv", "w");
+  fprintf (seatFile, "enabled,rotation,xpos,ypos,path,name,equipment\n");
   for (int i = 0; i < data.seats.used; i++)
     {
-      printSeatCSV (data.seats.array[i]);
+      printSeatCSV (seatFile, data.seats.array[i]);
     }
+  fclose (seatFile);
 }

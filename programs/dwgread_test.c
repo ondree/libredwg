@@ -70,7 +70,7 @@ opt_version (void)
 static int
 help (void)
 {
-  printf ("\nUsage: dwgread [OPTION]... DWGFILE\n");
+  printf ("\nUsage: dwgread_test [OPTION]... DWGFILE\n");
   printf ("Reads the DWG into some optional output format to stdout or some "
           "file,\n"
           "and prints error, success or verbose internal progress to stderr.\n"
