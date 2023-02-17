@@ -69,10 +69,9 @@ limitsForLayer (Dwg_Data *data, Dwg_Object_LAYER *layer)
   variables->EXTMAX.x = xMax;
   variables->EXTMIN.y = yMin;
   variables->EXTMIN.x = xMin;
-  fprintf (stdout,
-           "Force set limit points: xMin[%f],xMax[%f],yMin[%f],yMax[%f]",
-           variables->EXTMIN.x, variables->EXTMAX.x, variables->EXTMIN.y,
-           variables->EXTMAX.y);
+//  printf ("Force set limit points: xMin[%f],xMax[%f],yMin[%f],yMax[%f]\n",
+//          variables->EXTMIN.x, variables->EXTMAX.x, variables->EXTMIN.y,
+//          variables->EXTMAX.y);
 }
 
 void

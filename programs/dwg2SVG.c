@@ -64,6 +64,12 @@ double model_xmin, model_ymin, model_xmax, model_ymax;
 double page_width, page_height, scale;
 
 static void output_SVG (Dwg_Data *dwg);
+// Layer names what needs to be printed despite its actual visibility
+static char *forced_layers[]
+    = { "150504_CAFMFLA_AP", "0805010101_BESTAND_BEAUFLA_D277RAUMP" };
+static char *forced_color_tint = (char *)"black";
+bool force_custom_tint = true;
+bool force_override_printed_layer = true;
 
 static int
 usage (void)
@@ -133,6 +139,24 @@ isnan_3BD (BITCODE_3BD pt)
 }
 
 static bool
+isLayerInvisible (Dwg_Object_LAYER *layer)
+{
+  if (!force_override_printed_layer)
+    return true;
+
+  // We need to override layer visibility
+  for (int i = 0; i < sizeof (forced_layers) / sizeof (forced_layers[0]); i++)
+    {
+      if (strcmp (layer->name, forced_layers[i]) == 0)
+        {
+          return false;
+        }
+    }
+
+  return true;
+}
+
+static bool
 entity_invisible (Dwg_Object *obj)
 {
   BITCODE_BS invisible = obj->tio.entity->invisible;
@@ -148,7 +172,7 @@ entity_invisible (Dwg_Object *obj)
     return false;
   _obj = layer->tio.object->tio.LAYER;
   // pre-r13 it is set if the layer color is negative
-  return _obj->on == 0 ? true : false;
+  return _obj->on == 0 ? isLayerInvisible (_obj) : false;
 }
 
 static double
@@ -163,6 +187,10 @@ entity_lweight (Dwg_Object_Entity *ent)
 static char *
 entity_color (Dwg_Object_Entity *ent)
 {
+  if (force_custom_tint)
+    {
+      return forced_color_tint;
+    }
   // TODO: alpha?
   if (ent->color.index >= 8 && ent->color.index < 256)
     {
@@ -815,8 +843,11 @@ output_BLOCK_HEADER (Dwg_Object_Ref *ref)
 static void
 output_SVG (Dwg_Data *dwg)
 {
-  //FORCE EXTMIN and EXTMAX definition
+  // FORCE EXTMIN and EXTMAX definition
   forceBoundingBoxForData (dwg, "080202_BEAUGEB_AWAND");
+  force_override_printed_layer = true;
+  force_custom_tint = true;
+
   BITCODE_BS i;
   int num = 0;
   Dwg_Object *obj;
