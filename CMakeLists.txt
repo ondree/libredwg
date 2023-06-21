@@ -158,10 +158,7 @@ set(libredwg_SOURCES
     src/out_dxfb.c
     ${write_SOURCES}
     src/print.c
-    src/lists.c
-        programs/dwg_bounding_box.c
-        programs/deskbot_reader.c
-        programs/deskbot_printer.c)
+    src/lists.c)
 
 add_library(redwg
     ${libredwg_HEADERS}
