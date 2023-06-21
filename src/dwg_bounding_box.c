@@ -61,7 +61,7 @@ static void limitsForLayer(Dwg_Data *data, Dwg_Object_LAYER *layer) {
 //          variables->EXTMAX.y);
 }
 
-void forceBoundingBoxForData(Dwg_Data *data, char *source_layer_name) {
+EXPORT void forceBoundingBoxForData(Dwg_Data *data, char *source_layer_name) {
     Dwg_Object_LAYER **layers = dwg_get_layers(data);
     unsigned int num_layers = dwg_get_layer_count(data);
 
