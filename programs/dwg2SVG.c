@@ -58,7 +58,7 @@
 #include "escape.h"
 #include "geom.h"
 #include "suffix.inc"
-#include "dwg_bounding_box.h"
+#include "../src/dwg_bounding_box.h"
 
 static int opts = 0;
 static int mspace = 0; // only mspace, even when pspace is defined
