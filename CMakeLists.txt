@@ -192,7 +192,7 @@ if(NOT LIBREDWG_LIBONLY)
   add_executable(dwgread_test programs/dwgread_test.c src/deskbot_reader.c)
   add_executable(dwgbmp programs/dwgbmp.c)
   add_executable(dwg2SVG programs/dwg2SVG.c
-                         programs/escape.c programs/geom.c)
+                         programs/escape.c programs/geom.c src/dwg_bounding_box.c)
 
   if (HAVE_PCRE2_H)
     if(HAVE_PCRE2_16)
