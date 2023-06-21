@@ -112,9 +112,6 @@ EXTRA_HEADERS = \
 	reedsolomon.h \
         hash.h \
         lists.h \
-        dwg_bounding_box.h \
-        deskbot_reader.h \
-        deskbot_printer.h \
 	dynapi.h \
 	out_json.h
 if !DISABLE_DXF
