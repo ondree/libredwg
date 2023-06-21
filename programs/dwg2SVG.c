@@ -780,10 +780,10 @@ static void output_SVG(Dwg_Data *dwg) {
     model_xmax = dwg_model_x_max(dwg);
     model_ymax = dwg_model_y_max(dwg);
 
-    printf(stderr, "model_xmin: %f", model_xmin);
-    printf(stderr, "model_ymin: %f", model_ymin);
-    printf(stderr, "model_xmax: %f", model_xmax);
-    printf(stderr, "model_ymax: %f", model_ymax);
+//    printf(stderr, "model_xmin: %f", model_xmin);
+//    printf(stderr, "model_ymin: %f", model_ymin);
+//    printf(stderr, "model_xmax: %f", model_xmax);
+//    printf(stderr, "model_ymax: %f", model_ymax);
 
     dx = model_xmax - model_xmin;
     dy = model_ymax - model_ymin;
