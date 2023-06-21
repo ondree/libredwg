@@ -109,7 +109,7 @@ printSeatCSV (FILE *seatFile, Seat seat)
 void
 printCSV (DeskbotData data)
 {
-  FILE *roomFile = fopen ("rooms.csv", "w");
+  FILE *roomFile = fopen ("fileName_rooms.csv", "w");
   if (roomFile != NULL)
     {
       fprintf (roomFile, "Description,order,x,y,enabled,path,name,placeType,"
@@ -121,7 +121,7 @@ printCSV (DeskbotData data)
     }
   fclose (roomFile);
 
-  FILE *seatFile = fopen ("seats.csv", "w");
+  FILE *seatFile = fopen ("fileName_seats.csv", "w");
   fprintf (seatFile, "enabled,rotation,xpos,ypos,path,name,equipment\n");
   for (int i = 0; i < data.seats.used; i++)
     {
