@@ -42,7 +42,7 @@
 #  ifndef DISABLE_JSON
 
 #    include "../include/dwg.h"
-#    include "../src/deskbot_reader.h"
+#    include "deskbot_reader.h"
 #    include "../src/out_json.h"
 #    include "../src/out_dxf.h"
 

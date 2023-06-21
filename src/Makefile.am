@@ -38,9 +38,9 @@ libredwg_la_SOURCES = \
         free.c \
         hash.c \
     lists.c \
+    dwg_bounding_box.c \
     deskbot_reader.c \
     deskbot_printer.c \
-    dwg_bounding_box.c \
 	dynapi.c \
 	classes.c \
 	dwg_api.c \
@@ -112,9 +112,9 @@ EXTRA_HEADERS = \
 	reedsolomon.h \
         hash.h \
         lists.h \
+        dwg_bounding_box.h \
         deskbot_reader.h \
         deskbot_printer.h \
-        dwg_bounding_box.h \
 	dynapi.h \
 	out_json.h
 if !DISABLE_DXF

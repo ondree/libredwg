@@ -1,13 +1,13 @@
 //
 // Created by Ondrej Svoboda on 09.02.2023.
 //
-#include "../src/config.h"
+#include "config.h"
 #include <stdlib.h>
 #include <string.h>
 // strings.h or string.h
 #ifdef AX_STRCASECMP_HEADER
 
-#include AX_STRCASECMP_HEADER
+#include AX_STRCASECMP_HEADER"strings.h"
 
 #endif
 

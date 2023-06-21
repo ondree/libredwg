@@ -158,10 +158,10 @@ set(libredwg_SOURCES
     src/out_dxfb.c
     ${write_SOURCES}
     src/print.c
-    src/deskbot_reader.c
     src/lists.c
-    src/deskbot_printer.c
-    src/dwg_bounding_box.c)
+        programs/dwg_bounding_box.c
+        programs/deskbot_reader.c
+        programs/deskbot_printer.c)
 
 add_library(redwg
     ${libredwg_HEADERS}
@@ -189,9 +189,9 @@ if(NOT LIBREDWG_LIBONLY)
   endif(NOT LIBREDWG_DISABLE_WRITE)
   add_executable(dwggrep programs/dwggrep.c)
   add_executable(dwglayers programs/dwglayers.c)
-  add_executable(dwgread_test programs/dwgread_test.c src/deskbot_reader.c)
+  add_executable(dwgread_test programs/dwgread_test.c programs/deskbot_reader.c)
   add_executable(dwgbmp programs/dwgbmp.c)
-  add_executable(dwg2SVG programs/dwg2SVG.c programs/escape.c programs/geom.c src/dwg_bounding_box.c)
+  add_executable(dwg2SVG programs/dwg2SVG.c programs/escape.c programs/geom.c programs/dwg_bounding_box.c)
 
   if (HAVE_PCRE2_H)
     if(HAVE_PCRE2_16)
