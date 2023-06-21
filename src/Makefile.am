@@ -38,9 +38,6 @@ libredwg_la_SOURCES = \
         free.c \
         hash.c \
     lists.c \
-    dwg_bounding_box.c \
-    deskbot_reader.c \
-    deskbot_printer.c \
 	dynapi.c \
 	classes.c \
 	dwg_api.c \

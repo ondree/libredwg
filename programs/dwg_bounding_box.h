@@ -7,6 +7,6 @@
 #ifndef LIBREDWG_DWG_BOUNDING_BOX_H
 #  define LIBREDWG_DWG_BOUNDING_BOX_H
 
-#endif // LIBREDWG_DWG_BOUNDING_BOX_H
-
 EXPORT void forceBoundingBoxForData (Dwg_Data *data, char *source_layer_name);
+
+#endif // LIBREDWG_DWG_BOUNDING_BOX_H
