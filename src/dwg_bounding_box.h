@@ -9,4 +9,4 @@
 
 #endif // LIBREDWG_DWG_BOUNDING_BOX_H
 
-void forceBoundingBoxForData (Dwg_Data *data, char *source_layer_name);
+EXPORT void forceBoundingBoxForData (Dwg_Data *data, char *source_layer_name);
