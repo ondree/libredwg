@@ -69,8 +69,7 @@ double page_width, page_height, scale;
 static void output_SVG(Dwg_Data *dwg);
 
 // Layer names what needs to be printed despite its actual visibility
-static char *forced_layers[] = {"0805010101_BESTAND_BEAUFLA_D277RAUMP",
-                                "15050403_CAFMFLA_AP_DESKSHARING"};
+char **forced_layers;
 static char *forced_color_tint = (char *) "black";
 bool force_custom_tint = false;
 bool force_override_printed_layer = false;
@@ -834,6 +833,7 @@ int main(int argc, char *argv[]) {
     int force_free = 0;
     int i = 1;
     int c;
+    char *layers;
 #ifdef HAVE_GETOPT_LONG
     int option_index = 0;
     static struct option long_options[]
@@ -842,6 +842,7 @@ int main(int argc, char *argv[]) {
                {"force-free", 0, 0,     0},
                {"help",       0, 0,     0},
                {"version",    0, 0,     0},
+               {"layers",     1, &opts, 1},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -850,7 +851,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m::h", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m::h:i", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)
@@ -891,6 +892,8 @@ int main(int argc, char *argv[]) {
                     force_free = 1;
                 if (!strcmp(long_options[option_index].name, "mspace"))
                     mspace = 1;
+                if (!strcmp(long_options[option_index].name, "layers"))
+                    layers = argv[i];
                 break;
 #else
                 case 'i':
@@ -912,6 +915,12 @@ int main(int argc, char *argv[]) {
                 }
 #endif
                 break;
+            case 'l':
+                i = (optind > 0 && optind < argc) ? optind - 1 : 1;
+                if (!memcmp(argv[i], "-l", 2)) {
+                    layers = argv[i];
+                }
+                break;
             case 'h':
                 return help();
             case '?':
@@ -929,6 +938,26 @@ int main(int argc, char *argv[]) {
     memset(&g_dwg, 0, sizeof(Dwg_Data));
     g_dwg.opts = opts;
     error = dwg_read_file(argv[i], &g_dwg);
+
+    char **res = NULL;
+    char *p = strtok(layers, ",");
+    int n_spaces = 0;
+
+
+/* split string and append tokens to 'res' */
+
+    while (p) {
+        res = realloc(res, sizeof(char *) * ++n_spaces);
+
+        if (res == NULL)
+            exit(-1); /* memory allocation failed */
+
+        res[n_spaces - 1] = p;
+
+        p = strtok(NULL, ",");
+    }
+
+    forced_layers = res;
 
     if (opts)
         fprintf(stderr, "\nSVG\n===\n");
@@ -953,6 +982,7 @@ int main(int argc, char *argv[]) {
 #endif
             ) {
         dwg_free(&g_dwg);
+        free(res);
     }
     return error >= DWG_ERR_CRITICAL ? 1 : 0;
 }
