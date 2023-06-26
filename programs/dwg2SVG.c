@@ -851,7 +851,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m::h:i", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m::h:l", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)

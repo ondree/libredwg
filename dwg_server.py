@@ -42,7 +42,7 @@ async def layers(request: Request):
     data = subprocess.run(f'dwglayers {original_file_path}', capture_output=True, shell=True)
     print(data.stdout, file=sys.stderr)
 
-    final_data = data.stdout.decode('utf-8').split()
+    final_data = data.stdout.decode('latin-1').split()
 
     print(final_data, file=sys.stderr)
 
@@ -69,9 +69,10 @@ async def parse_image(request: Request):
     print(f'original path: {original_file_path}', file=sys.stderr)
     print(f'target file: {target_file_path}', file=sys.stderr)
 
-    print(f'layers: {request.json.get("layers")}', file=sys.stderr)
+    dwg_layers = request.form.get("layers")
+    print(f'layers: {dwg_layers}', file=sys.stderr)
 
-    execute = 'dwg2SVG ' + original_file_path + ' >' + target_file_path + ' ' + request.json.get('layers')
+    execute = f'dwg2SVG -l {dwg_layers} {original_file_path} >{target_file_path}'
     print(f'execute: {execute}', file=sys.stderr)
     os.system(execute)
 
