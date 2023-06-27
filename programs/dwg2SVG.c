@@ -893,7 +893,7 @@ int main(int argc, char *argv[]) {
                 if (!strcmp(long_options[option_index].name, "mspace"))
                     mspace = 1;
                 if (!strcmp(long_options[option_index].name, "layers"))
-                    layers = argv[i];
+                    layers = argv[i + 1];
                 break;
 #else
                 case 'i':
@@ -918,7 +918,7 @@ int main(int argc, char *argv[]) {
             case 'l':
                 i = (optind > 0 && optind < argc) ? optind - 1 : 1;
                 if (!memcmp(argv[i], "-l", 2)) {
-                    layers = argv[i];
+                    layers = argv[i + 1];
                 }
                 break;
             case 'h':
@@ -931,7 +931,7 @@ int main(int argc, char *argv[]) {
                 return usage();
         }
     }
-    i = optind;
+    i = optind + 1;
     if (i >= argc)
         return usage();
 
@@ -986,3 +986,37 @@ int main(int argc, char *argv[]) {
     }
     return error >= DWG_ERR_CRITICAL ? 1 : 0;
 }
+
+
+//C:\Users\vkaisler\Documents\libredwg\cmake-build-debug\dwg2SVG.exe -l 15050403_CAFMFLA_AP_DESKSHARING,0805010101_BESTAND_BEAUFLA_D277RAUMP,080202_BEAUGEB_AWAND C:\Users\vkaisler\Documents\libredwg\building1.dwg >C:\Users\vkaisler\Documents\libredwg\building1.svg
+
+//"0805010101_BESTAND_BEAUFLA_D277RAUMP",
+//"15050403_CAFMFLA_AP_DESKSHARING"
+
+//15050403_CAFMFLA_AP_DESKSHARING,08020802_BEAUGEB_BESRAUM,0805010101_BESTAND_BEAUFLA_D277RAUMP
+
+//15050403_CAFMFLA_AP_DESKSHARING
+//08020802_BEAUGEB_BESRAUM
+//0805010101_BESTAND_BEAUFLA_D277RAUMP
+
+//080100_BEAUACHS_ALL
+//080109_BEAUACHS_NULLPKT
+//080202_BEAUGEB_AWAND
+//080203_BEAUGEB_IWAND
+//08020401_BEAUGEB_DE_UZ
+//08020402_BEAUGEB_TREP
+//08020801_BEAUGEB_BESGEB
+//08020804_BEAUGEB_BESHQLH
+//08020903_BEAUGEB_VERINN
+//080300_BEAUTGA_ALL
+//08030102_BEAUTGA_AWGWAS
+//080306_BEAUTGA_FMINFO
+//080307_BEAUTGA_FOERD
+//08050102_BEAUFLA_D277ABZP
+//15050402_CAFMFLA_AP _FL─CHE
+//150504_CAFMFLA_AP
+//STRABAG Flńchen
+//STRABAG Flńchen (Abzugsflńche)
+//speedikonC_Label
+
+
