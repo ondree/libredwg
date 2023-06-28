@@ -753,8 +753,16 @@ static int output_BLOCK_HEADER(Dwg_Object_Ref *ref) {
     }
 
     obj = get_first_owned_entity(ref->obj);
+    bool block = false;
     while (obj) {
-        num += output_object(obj);
+        if (obj->type == DWG_TYPE_TEXT && !block) {
+            num += output_object(obj);
+            block = true;
+        } else if (obj->type != DWG_TYPE_TEXT) {
+            num += output_object(obj);
+            block = false;
+        }
+
         obj = get_next_owned_entity(ref->obj, obj);
     }
 
