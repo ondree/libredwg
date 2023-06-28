@@ -70,6 +70,7 @@ static void output_SVG(Dwg_Data *dwg);
 
 // Layer names what needs to be printed despite its actual visibility
 char **forced_layers;
+int forced_layers_size;
 static char *forced_color_tint = (char *) "black";
 bool force_custom_tint = false;
 bool force_override_printed_layer = false;
@@ -132,8 +133,9 @@ static bool isLayerInvisible(Dwg_Object_LAYER *layer) {
         return true;
 
     // We need to override layer visibility
-    for (int i = 0; i < sizeof(forced_layers) / sizeof(forced_layers[0]); i++) {
+    for (int i = 0; i < forced_layers_size; i++) {
         if (strcmp(layer->name, forced_layers[i]) == 0) {
+//            fprintf(stderr, "adding files with this layer: %s", forced_layers[i]);
             return false;
         }
     }
@@ -162,7 +164,7 @@ static double entity_lweight(Dwg_Object_Entity *ent) {
     // TODO: resolve BYLAYER 256, see above.
     // stroke-width:%0.1fpx. 100th of a mm
     int lw = dxf_cvt_lweight(ent->linewt);
-    return lw < 0 ? 0.1 : (double) (lw * 0.001);
+    return lw < 0 ? 30.0 : (double) (lw * 0.1);
 }
 
 static char *entity_color(Dwg_Object_Entity *ent) {
@@ -257,10 +259,11 @@ static void output_TEXT(Dwg_Object *obj) {
         fontfamily = "Courier";
 
     transform_OCS_2d(&pt, text->ins_pt, text->extrusion);
+
     printf("\t<text id=\"dwg-object-%d\" x=\"%f\" y=\"%f\" "
            "font-family=\"%s\" font-size=\"%f\" fill=\"%s\">%s</text>\n",
            obj->index, transform_X(pt.x), transform_Y(pt.y), fontfamily,
-           text->height /* fontsize */, entity_color(obj->tio.entity),
+           text->height * 3 /* fontsize */, entity_color(obj->tio.entity),
            escaped ? escaped : "");
     free(escaped);
 }
@@ -940,7 +943,7 @@ int main(int argc, char *argv[]) {
     error = dwg_read_file(argv[i], &g_dwg);
 
     char **res = NULL;
-    char *p = strtok(layers, ",");
+    char *p = strtok(layers, ":");
     int n_spaces = 0;
 
 
@@ -954,10 +957,19 @@ int main(int argc, char *argv[]) {
 
         res[n_spaces - 1] = p;
 
-        p = strtok(NULL, ",");
+        p = strtok(NULL, ":");
     }
 
     forced_layers = res;
+    int f_i;
+
+    fprintf(stderr, "Number of recognized layers: %d\n", n_spaces);
+
+    for (f_i = 0; f_i < n_spaces; f_i++) {
+        fprintf(stderr, "Picking this layer: %s\n", forced_layers[f_i]);
+    }
+
+    forced_layers_size = f_i;
 
     if (opts)
         fprintf(stderr, "\nSVG\n===\n");
