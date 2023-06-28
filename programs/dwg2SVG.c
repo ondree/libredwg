@@ -135,7 +135,6 @@ static bool isLayerInvisible(Dwg_Object_LAYER *layer) {
     // We need to override layer visibility
     for (int i = 0; i < forced_layers_size; i++) {
         if (strcmp(layer->name, forced_layers[i]) == 0) {
-//            fprintf(stderr, "adding files with this layer: %s", forced_layers[i]);
             return false;
         }
     }
@@ -836,7 +835,7 @@ int main(int argc, char *argv[]) {
     int force_free = 0;
     int i = 1;
     int c;
-    char *layers;
+    char *layers = NULL;
 #ifdef HAVE_GETOPT_LONG
     int option_index = 0;
     static struct option long_options[]
@@ -934,7 +933,12 @@ int main(int argc, char *argv[]) {
                 return usage();
         }
     }
-    i = optind + 1;
+    if (layers != NULL) {
+        i = optind + 1;
+    } else {
+        i = optind;
+    }
+
     if (i >= argc)
         return usage();
 
@@ -943,33 +947,39 @@ int main(int argc, char *argv[]) {
     error = dwg_read_file(argv[i], &g_dwg);
 
     char **res = NULL;
-    char *p = strtok(layers, ":");
-    int n_spaces = 0;
+
+    if (layers != NULL) {
+        char *p = strtok(layers, ":");
+        int n_spaces = 0;
 
 
 /* split string and append tokens to 'res' */
 
-    while (p) {
-        res = realloc(res, sizeof(char *) * ++n_spaces);
+        while (p) {
+            res = realloc(res, sizeof(char *) * ++n_spaces);
 
-        if (res == NULL)
-            exit(-1); /* memory allocation failed */
+            if (res == NULL)
+                exit(-1); /* memory allocation failed */
 
-        res[n_spaces - 1] = p;
+            res[n_spaces - 1] = p;
 
-        p = strtok(NULL, ":");
+            p = strtok(NULL, ":");
+        }
+
+        forced_layers = res;
+        int f_i;
+
+        fprintf(stderr, "Number of recognized layers: %d\n", n_spaces);
+
+        for (f_i = 0; f_i < n_spaces; f_i++) {
+            fprintf(stderr, "Picking this layer: %s\n", forced_layers[f_i]);
+        }
+
+        forced_layers_size = f_i;
+    } else {
+        fprintf(stderr, "No extra layers set");
+        forced_layers_size = 0;
     }
-
-    forced_layers = res;
-    int f_i;
-
-    fprintf(stderr, "Number of recognized layers: %d\n", n_spaces);
-
-    for (f_i = 0; f_i < n_spaces; f_i++) {
-        fprintf(stderr, "Picking this layer: %s\n", forced_layers[f_i]);
-    }
-
-    forced_layers_size = f_i;
 
     if (opts)
         fprintf(stderr, "\nSVG\n===\n");
