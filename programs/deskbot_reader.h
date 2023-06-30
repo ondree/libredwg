@@ -7,4 +7,7 @@
 
 #endif // LIBREDWG_DESKBOT_READER_H
 
-void loadDeskbotData (Dwg_Data *data, const char *string, const char *string1);
+extern char *base_layer;
+extern char *default_base_layer;
+
+void loadDeskbotData(Dwg_Data *data, const char *string, const char *string1);

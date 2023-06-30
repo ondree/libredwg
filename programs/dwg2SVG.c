@@ -71,6 +71,8 @@ static void output_SVG(Dwg_Data *dwg);
 // Layer names what needs to be printed despite its actual visibility
 char **forced_layers;
 int forced_layers_size;
+char *core_layer = NULL;
+char *default_core_layer = "080202_BEAUGEB_AWAND";
 static char *forced_color_tint = (char *) "black";
 bool force_custom_tint = false;
 bool force_override_printed_layer = false;
@@ -773,7 +775,7 @@ static int output_BLOCK_HEADER(Dwg_Object_Ref *ref) {
 
 static void output_SVG(Dwg_Data *dwg) {
     // FORCE EXTMIN and EXTMAX definition
-    forceBoundingBoxForData(dwg, "080202_BEAUGEB_AWAND");
+    forceBoundingBoxForData(dwg, core_layer);
     force_override_printed_layer = true;
     force_custom_tint = true;
 
@@ -853,6 +855,7 @@ int main(int argc, char *argv[]) {
                {"help",       0, 0,     0},
                {"version",    0, 0,     0},
                {"layers",     1, &opts, 1},
+               {"core-layer", 1, &opts, 1},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -861,7 +864,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m::h:l", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m::h:l:b", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)
@@ -931,6 +934,12 @@ int main(int argc, char *argv[]) {
                     layers = argv[i + 1];
                 }
                 break;
+            case 'b':
+                i = (optind > 0 && optind < argc) ? optind - 1 : 1;
+                if (!memcmp(argv[i], "-b", 2)) {
+                    core_layer = argv[i + 1];
+                }
+                break;
             case 'h':
                 return help();
             case '?':
@@ -942,10 +951,18 @@ int main(int argc, char *argv[]) {
         }
     }
     if (layers != NULL) {
-        i = optind + 1;
-    } else {
-        i = optind;
+        optind++;
     }
+    if (core_layer != NULL) {
+        fprintf(stderr, "core layer set dynamically to %s", core_layer);
+        optind++;
+    }
+
+    if (core_layer == NULL) {
+        core_layer = default_core_layer;
+    }
+
+    i = optind;
 
     if (i >= argc)
         return usage();
@@ -1016,37 +1033,4 @@ int main(int argc, char *argv[]) {
     }
     return error >= DWG_ERR_CRITICAL ? 1 : 0;
 }
-
-
-//C:\Users\vkaisler\Documents\libredwg\cmake-build-debug\dwg2SVG.exe -l 15050403_CAFMFLA_AP_DESKSHARING,0805010101_BESTAND_BEAUFLA_D277RAUMP,080202_BEAUGEB_AWAND C:\Users\vkaisler\Documents\libredwg\building1.dwg >C:\Users\vkaisler\Documents\libredwg\building1.svg
-
-//"0805010101_BESTAND_BEAUFLA_D277RAUMP",
-//"15050403_CAFMFLA_AP_DESKSHARING"
-
-//15050403_CAFMFLA_AP_DESKSHARING,08020802_BEAUGEB_BESRAUM,0805010101_BESTAND_BEAUFLA_D277RAUMP
-
-//15050403_CAFMFLA_AP_DESKSHARING
-//08020802_BEAUGEB_BESRAUM
-//0805010101_BESTAND_BEAUFLA_D277RAUMP
-
-//080100_BEAUACHS_ALL
-//080109_BEAUACHS_NULLPKT
-//080202_BEAUGEB_AWAND
-//080203_BEAUGEB_IWAND
-//08020401_BEAUGEB_DE_UZ
-//08020402_BEAUGEB_TREP
-//08020801_BEAUGEB_BESGEB
-//08020804_BEAUGEB_BESHQLH
-//08020903_BEAUGEB_VERINN
-//080300_BEAUTGA_ALL
-//08030102_BEAUTGA_AWGWAS
-//080306_BEAUTGA_FMINFO
-//080307_BEAUTGA_FOERD
-//08050102_BEAUFLA_D277ABZP
-//15050402_CAFMFLA_AP _FL─CHE
-//150504_CAFMFLA_AP
-//STRABAG Flńchen
-//STRABAG Flńchen (Abzugsflńche)
-//speedikonC_Label
-
 

@@ -7,7 +7,7 @@
 // strings.h or string.h
 #ifdef AX_STRCASECMP_HEADER
 
-#include AX_STRCASECMP_HEADER"strings.h"
+#include AX_STRCASECMP_HEADER
 
 #endif
 
@@ -19,17 +19,19 @@
 #endif
 
 #include "dwg.h"
+#include "deskbot_reader.h"
+#include "bits.h"
+#include "dwg_bounding_box.h"
+#include "deskbot_printer.h"
 
 #ifndef DISABLE_DXF
 #  ifndef DISABLE_JSON
 
-#    include "deskbot_reader.h"
-#    include "bits.h"
-#    include "deskbot_printer.h"
-#    include "dwg_bounding_box.h"
-
 #  endif
 #endif
+
+char *base_layer;
+char *default_base_layer = "080202_BEAUGEB_AWAND";
 
 static char *entityTextValue(Dwg_Data *data, BITCODE_TV value) {
     if (data->header.version > R_2007)
@@ -165,8 +167,15 @@ static void loadPolyLines(Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonL
     }
 }
 
+char *loadBaseLayer() {
+    if (base_layer == NULL)
+        return default_base_layer;
+    else
+        return base_layer;
+}
+
 void loadDeskbotData(Dwg_Data *data, const char *seatLayer, const char *roomLayer) {
-    forceBoundingBoxForData(data, "080202_BEAUGEB_AWAND");
+    forceBoundingBoxForData(data, loadBaseLayer());
     DeskbotData deskbotData;
     initRoomList(&deskbotData.rooms, 5);
     initSeatList(&deskbotData.seats, 5);

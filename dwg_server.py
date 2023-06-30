@@ -26,7 +26,7 @@ async def ping(request: Request):
     return text('Project for parsing dwg, version:(1.0)')
 
 
-@app.post('layers')
+@app.post('/layers')
 async def layers(request: Request):
     request_file = request.files.get('file')
     if not request_file:
@@ -57,11 +57,10 @@ async def parse_image(request: Request):
     if not request_file.name.split('.')[-1] == 'dwg':
         return json({'message': 'Selected file is not an dwg!', 'success': False})
 
+    await delete_file(request_file)
     await save_file(request_file)
 
-    split_name = request_file.name.split('.')
-    split_name.pop()
-    file_name = ''.join(split_name)
+    file_name = load_file_name(request_file)
 
     original_file_path = os.path.join(os.getcwd(), request_file.name)
     target_file_path = os.path.join(os.getcwd(), file_name) + '.svg'
@@ -72,8 +71,20 @@ async def parse_image(request: Request):
     dwg_layers = request.form.get("layers")
     print(f'layers: {dwg_layers}', file=sys.stderr)
 
-    execute = f'dwg2SVG -l {dwg_layers} {original_file_path} >{target_file_path}'
+    core_layer = request.form.get("core_layer")
+    if not core_layer:
+        core_layer = '080202_BEAUGEB_AWAND'  # defualt layer for boundaries
+
+    if not dwg_layers:
+        execute = f'dwg2SVG -b {core_layer} {original_file_path} >{target_file_path}'
+    else:
+        joined_layers = ":".join(dwg_layers.split(','))
+        execute = f'dwg2SVG -b {core_layer} -l {joined_layers} {original_file_path} >{target_file_path}'
+
     print(f'execute: {execute}', file=sys.stderr)
+
+    await delete_file_by_path(target_file_path)
+
     os.system(execute)
 
     return await file(target_file_path, filename=file_name + '.svg')
@@ -89,12 +100,29 @@ async def parse_file(request: Request):
 
     await save_file(request_file)
 
-    name_of_file = request_file.name.split('.')
-    name_of_file.pop()
+    request_file_name = load_file_name(request_file)
 
-    os.system('./dwgread_test ' + os.path.join(os.getcwd(), request_file.name))
-    # os.system('./dwg2SVG ' + os.path.join(os.getcwd(), file.name) + '>' + name_of_file + '.svg')
-    return text('Everything is awesome')
+    original_file_path = os.path.join(os.getcwd(), request_file.name)
+    target_file_path = os.path.join(os.getcwd(), request_file_name) + '.csv'
+
+    print(f'original path: {original_file_path}', file=sys.stderr)
+    print(f'target file: {target_file_path}', file=sys.stderr)
+
+    execute = f'dwgread_test {original_file_path} >{target_file_path}'
+
+    print(f'execute: {execute}', file=sys.stderr)
+
+    await delete_file_by_path(target_file_path)
+
+    os.system(execute)
+
+    return await file(target_file_path, filename=request_file_name + '.csv')
+
+
+def load_file_name(in_file) -> str:
+    split_name = in_file.name.split('.')
+    split_name.pop()
+    return ''.join(split_name)
 
 
 async def save_file(file):
@@ -103,9 +131,14 @@ async def save_file(file):
     temp_file.close()
 
 
-async def delete_file(file):
-    if os.path.exists(os.path.join(os.getcwd(), file.name)):
-        os.remove(os.path.join(os.getcwd(), file.name))
+async def delete_file_by_path(file_path: str):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
+async def delete_file(in_file):
+    if os.path.exists(os.path.join(os.getcwd(), in_file.name)):
+        os.remove(os.path.join(os.getcwd(), in_file.name))
 
 
 # Press the green button in the gutter to run the script.

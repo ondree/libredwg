@@ -43,6 +43,7 @@
 
 #    include "../include/dwg.h"
 #    include "deskbot_reader.h"
+#    include "deskbot_printer.h"
 #    include "../src/out_json.h"
 #    include "../src/out_dxf.h"
 
@@ -128,6 +129,12 @@ int main(int argc, char *argv[]) {
     int has_v = 0;
     int force_free = 0;
     int c;
+
+    base_layer = NULL;
+    default_base_layer = "080202_BEAUGEB_AWAND";
+    default_file_name = "building";
+    file_name = NULL;
+
 #ifdef HAVE_GETOPT_LONG
     int option_index = 0;
     static struct option long_options[]
@@ -140,6 +147,8 @@ int main(int argc, char *argv[]) {
                {"help",       0, 0,     0},
                {"version",    0, 0,     0},
                {"force-free", 0, 0,     0},
+               {"base-layer", 1, &opts, 1},
+               {"file-name",  1, &opts, 0},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -150,7 +159,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L", long_options,&option_index))
+            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v::O:o:hi")) != -1)
@@ -165,7 +174,7 @@ int main(int argc, char *argv[]) {
                     has_v = 1;
                     break;
                 }
-                fprintf(stderr, "%s: option '-%c' requires an argument\n", argv[0],optopt);
+                fprintf(stderr, "%s: option '-%c' requires an argument\n", argv[0], optopt);
                 break;
 #ifdef HAVE_GETOPT_LONG
             case 0:
@@ -246,6 +255,20 @@ int main(int argc, char *argv[]) {
 #endif
                 has_v = 1;
                 break;
+            case 'b':
+                i = (optind > 0 && optind < argc) ? optind - 1 : 1;
+                if (!memcmp(argv[i], "-b", 2)) {
+                    base_layer = argv[i + 1];
+                    fprintf(stderr, "Base layer set to: %s\n", base_layer);
+                }
+                break;
+            case 'f':
+                i = (optind > 0 && optind < argc) ? optind - 1 : 1;
+                if (!memcmp(argv[i], "-f", 2)) {
+                    file_name = argv[i + 1];
+                    fprintf(stderr, "Output file set to: %s\n", file_name);
+                }
+                break;
             case 'h':
                 return help();
             case '?':
@@ -259,6 +282,12 @@ int main(int argc, char *argv[]) {
 
 // --------------------Handle arguments----------------------------------
 
+    if (base_layer != NULL) {
+        optind++;
+    }
+    if (file_name != NULL) {
+        optind++;
+    }
 
     memset(&dwg, 0, sizeof(Dwg_Data));
     if (has_v || !fmt)
@@ -352,9 +381,11 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "SUCCESS 0x%x\n", error);
             if (error && opts > 2)
                 dwg_errstrings(error);
-        } else
+        } else {
+            loadDeskbotData(&dwg, seatLayer, roomLayer);
             fprintf(stderr, "SUCCESS\n");
+        }
     }
-    loadDeskbotData(&dwg, seatLayer, roomLayer);
+
     return error >= DWG_ERR_CRITICAL ? 1 : 0;
 }

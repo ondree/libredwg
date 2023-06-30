@@ -186,7 +186,7 @@ if(NOT LIBREDWG_LIBONLY)
   endif(NOT LIBREDWG_DISABLE_WRITE)
   add_executable(dwggrep programs/dwggrep.c)
   add_executable(dwglayers programs/dwglayers.c)
-  add_executable(dwgread_test programs/dwgread_test.c programs/deskbot_reader.c)
+  add_executable(dwgread_test programs/dwgread_test.c programs/deskbot_reader.c programs/deskbot_printer.c programs/dwg_bounding_box.c)
   add_executable(dwgbmp programs/dwgbmp.c)
   add_executable(dwg2SVG programs/dwg2SVG.c programs/escape.c programs/geom.c programs/dwg_bounding_box.c)
 

@@ -3,7 +3,12 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 #include "deskbot_printer.h"
+
+char final_file_name[255];
+char *file_name;
+char *default_file_name;
 
 static void
 printPolygonData(PolygonList polygonList) {
@@ -91,8 +96,23 @@ void printSeatCSV(FILE *seatFile, Seat seat) {
     }
 }
 
+char *processFileName(char *part) {
+//    clear file name
+    memset(final_file_name, 0, strlen(final_file_name));
+
+//    concatenate into '{file_name}{part}.csv'
+    if (file_name != NULL)
+        strcat(final_file_name, file_name);
+    else
+        strcat(final_file_name, default_file_name);
+
+    strcat(final_file_name, part);
+    strcat(final_file_name, ".csv");
+    return final_file_name;
+}
+
 void printCSV(DeskbotData data) {
-    FILE *roomFile = fopen("fileName_rooms.csv", "w");
+    FILE *roomFile = fopen(processFileName("_rooms"), "w");
     if (roomFile != NULL) {
         fprintf(roomFile, "Description,order,x,y,enabled,path,name,placeType,"
                           "capacity,equipment\n");
@@ -102,7 +122,7 @@ void printCSV(DeskbotData data) {
     }
     fclose(roomFile);
 
-    FILE *seatFile = fopen("fileName_seats.csv", "w");
+    FILE *seatFile = fopen(processFileName("_seats"), "w");
     fprintf(seatFile, "enabled,rotation,xpos,ypos,path,name,equipment\n");
     for (int i = 0; i < data.seats.used; i++) {
         printSeatCSV(seatFile, data.seats.array[i]);
