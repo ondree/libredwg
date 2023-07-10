@@ -79,13 +79,16 @@ async def parse_image(request: Request):
         execute = f'dwg2SVG -b {core_layer} {original_file_path} >{target_file_path}'
     else:
         joined_layers = ":".join(dwg_layers.split(','))
-        execute = f'dwg2SVG -b {core_layer} -l {joined_layers} {original_file_path} >{target_file_path}'
+        execute = f'dwg2SVG -l {joined_layers} -b {core_layer} {original_file_path} >{target_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
     await delete_file_by_path(target_file_path)
 
     os.system(execute)
+
+    if not os.path.exists(target_file_path):
+        return text('Internal error: Result is missing', status=501)
 
     return await file(target_file_path, filename=file_name + '.svg')
 
@@ -103,20 +106,68 @@ async def parse_file(request: Request):
     request_file_name = load_file_name(request_file)
 
     original_file_path = os.path.join(os.getcwd(), request_file.name)
-    target_file_path = os.path.join(os.getcwd(), request_file_name) + '.csv'
+    target_file_path = os.path.join(os.getcwd(), request_file_name)
 
     print(f'original path: {original_file_path}', file=sys.stderr)
     print(f'target file: {target_file_path}', file=sys.stderr)
 
-    execute = f'dwgread_test {original_file_path} >{target_file_path}'
+    core_layer = request.form.get("core_layer")
+    if not core_layer:
+        core_layer = '080202_BEAUGEB_AWAND'  # defualt layer for boundaries
+
+    execute = f'dwgread_test {original_file_path} -b ${core_layer} -f {target_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
-    await delete_file_by_path(target_file_path)
+    target_rooms = f'{target_file_path}_rooms.csv'
+    target_seats = f'{target_file_path}_seats.csv'
+
+    await delete_file_by_path(target_rooms)
+    await delete_file_by_path(target_seats)
 
     os.system(execute)
 
-    return await file(target_file_path, filename=request_file_name + '.csv')
+    if not os.path.exists(target_rooms):
+        return text("Rooms were not extracted", status=400)
+
+    if not os.path.exists(target_seats):
+        return text("Seats were not extracted", status=400)
+
+    return text("Successfully processed", status=200)
+
+
+@app.get('/seats')
+async def download_seats(request: Request):
+    file_name = request.args.get('file')
+
+    if not file_name:
+        return json({'message': 'No file selected!', 'success': False})
+
+    request_file_name = f'{file_name}_seats.csv'
+
+    target_file_path = os.path.join(os.getcwd(), request_file_name)
+
+    if not os.path.exists(target_file_path):
+        return text("Rooms were not extracted run /parse first", status=400)
+
+    return await file(target_file_path, filename=request_file_name)
+
+
+@app.get('/rooms')
+async def download_rooms(request: Request):
+    file_name = request.args.get('file')
+
+    if not file_name:
+        return json({'message': 'No file selected!', 'success': False})
+
+    request_file_name = f'{file_name}_rooms.csv'
+
+    target_file_path = os.path.join(os.getcwd(), request_file_name)
+
+    if not os.path.exists(target_file_path):
+        return text("Rooms were not extracted run /parse first", status=400)
+
+    return await file(target_file_path, filename=request_file_name)
 
 
 def load_file_name(in_file) -> str:

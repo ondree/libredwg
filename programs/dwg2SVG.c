@@ -854,8 +854,8 @@ int main(int argc, char *argv[]) {
                {"force-free", 0, 0,     0},
                {"help",       0, 0,     0},
                {"version",    0, 0,     0},
-               {"layers",     1, &opts, 1},
-               {"core-layer", 1, &opts, 1},
+               {"layers",     1, &opts, 0},
+               {"core-layer", 1, &opts, 0},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -864,7 +864,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m::h:l:b", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m:l::h:b", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)
@@ -951,10 +951,11 @@ int main(int argc, char *argv[]) {
         }
     }
     if (layers != NULL) {
+        fprintf(stderr, "Layers to draw loaded and se to: %s\n", layers);
         optind++;
     }
     if (core_layer != NULL) {
-        fprintf(stderr, "core layer set dynamically to %s", core_layer);
+        fprintf(stderr, "core layer set dynamically to: %s\n", core_layer);
         optind++;
     }
 
@@ -1002,7 +1003,7 @@ int main(int argc, char *argv[]) {
 
         forced_layers_size = f_i;
     } else {
-        fprintf(stderr, "No extra layers set");
+        fprintf(stderr, "No extra layers set\n");
         forced_layers_size = 0;
     }
 
