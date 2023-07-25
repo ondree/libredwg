@@ -42,6 +42,7 @@ static char *entityTextValue(Dwg_Data *data, BITCODE_TV value) {
 
 int countChar(const char *str, char symbol) {
     int count = 0;
+    if (str == NULL) return 0;
     for (int i = 0; str[i]; i++) {
         if (str[i] == symbol) {
             count++;
@@ -74,10 +75,19 @@ static void insertData(DeskbotData *deskbotData, Attribute *attribute,
     }
 }
 
+static bool layerLWNamesWithPrefix(Dwg_Entity_LWPOLYLINE entity, const char *seatLayer,
+                                   const char *roomLayer) {
+    BITCODE_TV name = entity.parent->layer->obj->tio.object->tio.LAYER->name;
+    return strstr(name, seatLayer) != NULL || strstr(name, roomLayer) != NULL;
+}
+
 static bool layerNamesWithPrefix(Dwg_Entity_POLYLINE_2D entity, const char *seatLayer,
                                  const char *roomLayer) {
-    BITCODE_TV name = entity.parent->layer->obj->tio.object->tio.LAYER->name;
-    return strstr(name, seatLayer) || strstr(name, roomLayer);
+    char *name = entity.parent->layer->obj->tio.object->tio.LAYER->name;
+//    fprintf(stderr, "Checking layer: %s\n", name);
+    if (strcmp(name, "1") != 0)
+        fprintf(stderr, "Checking layer: %s\n", name);
+    return strstr(name, seatLayer) != NULL || strstr(name, roomLayer) != NULL;
 }
 
 static BITCODE_RD countRotation(Polygon polygon) {
@@ -143,8 +153,11 @@ static void loadAttributes(Dwg_Data *data, Dwg_Entity_INSERT *insertEntity,
     for (int j = 0; j < insertEntity->num_owned; j++) {
         Dwg_Object *object = insertEntity->attribs[j]->obj;
         Dwg_Entity_ATTRIB *attrib = object->tio.entity->tio.ATTRIB;
-        if (attrib != NULL)
+        if (attrib != NULL) {
             loadAttribute(data, attrib, attribute);
+            fprintf(stderr, "Loading attribute ->id %s, ->name %s, ->path %s, ->blockName %s\n", attribute->id,
+                    attribute->name, attribute->path, attribute->blockName);
+        }
     }
 }
 
@@ -155,12 +168,30 @@ static void loadPolyLines(Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonL
         Dwg_Object *ownerObj = header->entities[j]->obj;
         switch (ownerObj->fixedtype) {
             case DWG_TYPE_POLYLINE_2D: {
-                Dwg_Entity_POLYLINE_2D *entity
-                        = ownerObj->tio.entity->tio.POLYLINE_2D;
-                if (layerNamesWithPrefix(*entity, seatLayer, roomLayer) == 1)
+                fprintf(stderr, "checking entity of type POLYLINE_2D\n");
+                Dwg_Entity_POLYLINE_2D *entity = ownerObj->tio.entity->tio.POLYLINE_2D;
+                if (layerNamesWithPrefix(*entity, seatLayer, roomLayer)) {
                     loadVertex(data, entity, polygonList, insert, ownerObj->handle);
+                    fprintf(stderr, "Loaded polylines for %s\n",
+                            entity->parent->layer->obj->tio.object->tio.LAYER->name);
+                }
             }
                 break;
+            case DWG_TYPE_LWPOLYLINE: {
+                fprintf(stderr, "checking entity of type LWPOLYLINE\n");
+                Dwg_Entity_LWPOLYLINE *entity = ownerObj->tio.entity->tio.LWPOLYLINE;
+                if (layerLWNamesWithPrefix(*entity, seatLayer, roomLayer)) {
+//                    loadVertex(data, entity, polygonList, insert, ownerObj->handle);
+                    fprintf(stderr, "Loaded polylines for %s\n",
+                            entity->parent->layer->obj->tio.object->tio.LAYER->name);
+                }
+            }
+                break;
+            case DWG_TYPE_POLYLINE_PFACE:
+                fprintf(stderr, "checking entity of type POLYLINE_PFACE\n");
+                break;
+            case DWG_TYPE_POLYLINE_MESH:
+                fprintf(stderr, "checking entity of type POLYLINE_MESH\n");
             default:
                 break;
         }
@@ -186,8 +217,7 @@ void loadDeskbotData(Dwg_Data *data, const char *seatLayer, const char *roomLaye
             Dwg_Object_BLOCK_HEADER *header = obj.tio.object->tio.BLOCK_HEADER;
             if (header->num_owned > 0 && header->num_inserts > 0) {
                 // Deskbot DWG file should always have 1 insert entity
-                Dwg_Entity_INSERT *insertEntity
-                        = header->inserts[0]->obj->tio.entity->tio.INSERT;
+                Dwg_Entity_INSERT *insertEntity = header->inserts[0]->obj->tio.entity->tio.INSERT;
                 PolygonList polygonList;
                 initPolygonList(&polygonList, 10);
                 Attribute attribute;

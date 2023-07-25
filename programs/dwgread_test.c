@@ -257,17 +257,13 @@ int main(int argc, char *argv[]) {
                 break;
             case 'b':
                 i = (optind > 0 && optind < argc) ? optind - 1 : 1;
-                if (!memcmp(argv[i], "-b", 2)) {
-                    base_layer = argv[i + 1];
-                    fprintf(stderr, "Base layer set to: %s\n", base_layer);
-                }
+                base_layer = optarg;
+                fprintf(stderr, "Base layer set to: %s\n", base_layer);
                 break;
             case 'f':
                 i = (optind > 0 && optind < argc) ? optind - 1 : 1;
-                if (!memcmp(argv[i], "-f", 2)) {
-                    file_name = argv[i + 1];
-                    fprintf(stderr, "Output file set to: %s\n", file_name);
-                }
+                file_name = optarg;
+                fprintf(stderr, "Output file set to: %s\n", file_name);
                 break;
             case 'h':
                 return help();
@@ -297,13 +293,25 @@ int main(int argc, char *argv[]) {
       setenv ("LIBREDWG_TRACE", "1", 0);
 #endif
 
+    i = optind;
+
+    int j;
+
+    fprintf(stderr, "i: %d\n", i);
+    fprintf(stderr, "argc: %d\n", argc);
+
+    for (j = 0; j <= argc; j++) {
+        fprintf(stderr, "item: %s\n", argv[j]);
+    }
+
     if (optind != argc) {
-        if (opts > 1)
-            fprintf(stderr, "Reading DWG file %s\n", argv[i]);
-        error = dwg_read_file(argv[i], &dwg);
+//        if (opts > 1)
+        fprintf(stderr, "Reading DWG file %s\n", argv[i - 2]);
+        error = dwg_read_file(argv[i - 2], &dwg);
+        fprintf(stderr, "File successfully loaded with errorCode: %d", error);
     } else {
-        if (opts > 1)
-            fprintf(stderr, "Reading DWG from stdin\n");
+//        if (opts > 1)
+        fprintf(stderr, "Reading DWG from stdin\n");
         error = dwg_read_file("-", &dwg); // i.e. from stdin
     }
 

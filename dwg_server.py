@@ -42,6 +42,7 @@ async def layers(request: Request):
     data = subprocess.run(f'dwglayers {original_file_path}', capture_output=True, shell=True)
     print(data.stdout, file=sys.stderr)
 
+    # Split only by \n
     final_data = data.stdout.decode('latin-1').split()
 
     print(final_data, file=sys.stderr)
@@ -115,7 +116,7 @@ async def parse_file(request: Request):
     if not core_layer:
         core_layer = '080202_BEAUGEB_AWAND'  # defualt layer for boundaries
 
-    execute = f'dwgread_test {original_file_path} -b ${core_layer} -f {target_file_path}'
+    execute = f'dwgread_test -b ${core_layer} -f {target_file_path} {original_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
