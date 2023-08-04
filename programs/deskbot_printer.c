@@ -89,6 +89,9 @@ void printSeatCSV(FILE *seatFile, Seat seat) {
             BITCODE_2BD point = polygon.points[insertPointIndex];
             char *enabled = "false";
             char *equipment = "[]";
+            fprintf(stderr, "Inserting values of: %s,%f,%f,%f,%s,%s,%s\n", enabled,
+                    polygon.rotation, point.x, point.y, seat.attribute.path,
+                    seat.attribute.name, equipment);
             fprintf(seatFile, "%s,%f,%f,%f,%s,%s,%s\n", enabled,
                     polygon.rotation, point.x, point.y, seat.attribute.path,
                     seat.attribute.name, equipment);

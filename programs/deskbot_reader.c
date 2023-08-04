@@ -130,6 +130,27 @@ static void loadVertex(Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
     insertPolygonList(polygonList, polygon);
 }
 
+static void loadLWVertex(Dwg_Data *data, Dwg_Entity_LWPOLYLINE *entity,
+                       PolygonList *polygonList, DeskbotInsert insert, Dwg_Handle handle) {
+    BITCODE_2BD *points = malloc(entity->num_points * sizeof(BITCODE_2BD));
+    BITCODE_3BD min = data->header_vars.EXTMIN;
+    BITCODE_3BD max = data->header_vars.EXTMAX;
+    for (int i = 0; i < entity->num_points; i++) {
+        BITCODE_2RD point = entity->points[i];
+            // calculate coordinates for Deskbot, needs to invert Y values
+            points[i].x = (point.x + insert.insertPoint.x - min.x) / 100;
+            points[i].y = (max.y - (point.y + insert.insertPoint.y)) / 100;
+    }
+    Polygon polygon;
+    polygon.ownerHandle = entity->parent->ownerhandle->handleref;
+    polygon.handle = handle;
+    polygon.points = points;
+    polygon.pointCount = entity->num_points;
+    polygon.layerName = entity->parent->layer->obj->tio.object->tio.LAYER->name;
+    polygon.rotation = countRotation(polygon);
+    insertPolygonList(polygonList, polygon);
+}
+
 static void loadAttribute(Dwg_Data *data, Dwg_Entity_ATTRIB *entity, Attribute *attribute) {
     const char *ATTRIBUTE_ID = "Kennzeichen";
     const char *ATTRIBUTE_NAME = "Benennung";
@@ -137,11 +158,11 @@ static void loadAttribute(Dwg_Data *data, Dwg_Entity_ATTRIB *entity, Attribute *
 
     {
         char *tagValue = entityTextValue(data, entity->tag);
-        if (strcmp(tagValue, ATTRIBUTE_ID) == 0) {
+        if (strcasecmp(tagValue, ATTRIBUTE_ID) == 0) {
             attribute->id = entityTextValue(data, entity->text_value);
-        } else if (strcmp(tagValue, ATTRIBUTE_NAME) == 0) {
+        } else if (strcasecmp(tagValue, ATTRIBUTE_NAME) == 0) {
             attribute->name = entityTextValue(data, entity->text_value);
-        } else if (strcmp(tagValue, ATTRIBUTE_PATH) == 0) {
+        } else if (strcasecmp(tagValue, ATTRIBUTE_PATH) == 0) {
             attribute->path = entityTextValue(data, entity->text_value);
         }
     }
@@ -149,7 +170,6 @@ static void loadAttribute(Dwg_Data *data, Dwg_Entity_ATTRIB *entity, Attribute *
 
 static void loadAttributes(Dwg_Data *data, Dwg_Entity_INSERT *insertEntity,
                            DeskbotInsert *insert, Attribute *attribute) {
-    insert->insertPoint = insertEntity->ins_pt;
     for (int j = 0; j < insertEntity->num_owned; j++) {
         Dwg_Object *object = insertEntity->attribs[j]->obj;
         Dwg_Entity_ATTRIB *attrib = object->tio.entity->tio.ATTRIB;
@@ -181,7 +201,7 @@ static void loadPolyLines(Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonL
                 fprintf(stderr, "checking entity of type LWPOLYLINE\n");
                 Dwg_Entity_LWPOLYLINE *entity = ownerObj->tio.entity->tio.LWPOLYLINE;
                 if (layerLWNamesWithPrefix(*entity, seatLayer, roomLayer)) {
-//                    loadVertex(data, entity, polygonList, insert, ownerObj->handle);
+                    loadLWVertex(data, entity, polygonList, insert, ownerObj->handle);
                     fprintf(stderr, "Loaded polylines for %s\n",
                             entity->parent->layer->obj->tio.object->tio.LAYER->name);
                 }
@@ -224,6 +244,7 @@ void loadDeskbotData(Dwg_Data *data, const char *seatLayer, const char *roomLaye
                 attribute.blockName = header->name;
                 DeskbotInsert insert;
                 loadAttributes(data, insertEntity, &insert, &attribute);
+                insert.insertPoint = insertEntity->ins_pt;
                 loadPolyLines(header, &polygonList, seatLayer, roomLayer,
                               insert, data);
                 insertData(&deskbotData, &attribute, &polygonList);

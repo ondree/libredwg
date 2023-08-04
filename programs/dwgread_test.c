@@ -124,6 +124,8 @@ int main(int argc, char *argv[]) {
     Dwg_Data dwg;
     const char *fmt = NULL;
     const char *outfile = NULL;
+//    const char *seatLayer = "Y";
+//    const char *roomLayer = "Z";
     const char *seatLayer = "150504";
     const char *roomLayer = "STRABAG Fl";
     int has_v = 0;
