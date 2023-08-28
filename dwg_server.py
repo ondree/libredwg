@@ -120,7 +120,15 @@ async def parse_file(request: Request):
     if not point_scale:
         point_scale = 1
 
-    execute = f'dwgread_test -b ${core_layer} -q {point_scale} -f {target_file_path} {original_file_path}'
+    room_layer = request.form.get("room_layer")
+    if not room_layer:
+        room_layer = '150504'
+
+    seat_layer = request.form.get("seat_layer")
+    if not seat_layer:
+        seat_layer = 'STRABAG Fl'
+
+    execute = f'dwgread_test -b ${core_layer} -R {room_layer} -S {seat_layer} -q {point_scale} -f {target_file_path} {original_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
