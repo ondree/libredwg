@@ -116,7 +116,11 @@ async def parse_file(request: Request):
     if not core_layer:
         core_layer = '080202_BEAUGEB_AWAND'  # defualt layer for boundaries
 
-    execute = f'dwgread_test -b ${core_layer} -f {target_file_path} {original_file_path}'
+    point_scale = request.form.get("scale")
+    if not point_scale:
+        point_scale = 1
+
+    execute = f'dwgread_test -b ${core_layer} -q {point_scale} -f {target_file_path} {original_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 

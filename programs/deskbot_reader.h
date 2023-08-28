@@ -9,5 +9,6 @@
 
 extern char *base_layer;
 extern char *default_base_layer;
+extern int vector_point_scale;
 
 void loadDeskbotData(Dwg_Data *data, const char *string, const char *string1);

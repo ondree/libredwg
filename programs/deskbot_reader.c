@@ -32,6 +32,7 @@
 
 char *base_layer;
 char *default_base_layer = "080202_BEAUGEB_AWAND";
+int vector_point_scale = 1;
 
 static char *entityTextValue(Dwg_Data *data, BITCODE_TV value) {
     if (data->header.version > R_2007)
@@ -115,9 +116,15 @@ static void loadVertex(Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
         Dwg_Object *object = entity->vertex[i]->obj;
         Dwg_Entity_VERTEX_2D *vertex = object->tio.entity->tio.VERTEX_2D;
         if (vertex != NULL) {
-            // calculate coordinates for Deskbot, needs to invert Y values
-            points[i].x = (vertex->point.x + insert.insertPoint.x - min.x) / 100;
-            points[i].y = (max.y - (vertex->point.y + insert.insertPoint.y)) / 100;
+            if (vector_point_scale == 1) {
+                // calculate coordinates for Deskbot, needs to invert Y values
+                points[i].x = (vertex->point.x + insert.insertPoint.x - min.x) / 100;
+                points[i].y = (max.y - (vertex->point.y + insert.insertPoint.y)) / 100;
+                // points[i].y = (vertex->point.y + insert.insertPoint.y - min.y) / 100;
+            } else {
+                points[i].x = (vertex->point.x / vector_point_scale) - min.x;
+                points[i].y = max.y - (vertex->point.y / vector_point_scale);
+            }
         }
     }
     Polygon polygon;
@@ -131,15 +138,20 @@ static void loadVertex(Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
 }
 
 static void loadLWVertex(Dwg_Data *data, Dwg_Entity_LWPOLYLINE *entity,
-                       PolygonList *polygonList, DeskbotInsert insert, Dwg_Handle handle) {
+                         PolygonList *polygonList, DeskbotInsert insert, Dwg_Handle handle) {
     BITCODE_2BD *points = malloc(entity->num_points * sizeof(BITCODE_2BD));
     BITCODE_3BD min = data->header_vars.EXTMIN;
     BITCODE_3BD max = data->header_vars.EXTMAX;
     for (int i = 0; i < entity->num_points; i++) {
         BITCODE_2RD point = entity->points[i];
-            // calculate coordinates for Deskbot, needs to invert Y values
+        // calculate coordinates for Deskbot, needs to invert Y values
+        if (vector_point_scale == 1) {
             points[i].x = (point.x + insert.insertPoint.x - min.x) / 100;
             points[i].y = (max.y - (point.y + insert.insertPoint.y)) / 100;
+        } else {
+            points[i].x = (point.x / vector_point_scale) - min.x;
+            points[i].y = max.y - (point.y / vector_point_scale);
+        }
     }
     Polygon polygon;
     polygon.ownerHandle = entity->parent->ownerhandle->handleref;
@@ -168,8 +180,7 @@ static void loadAttribute(Dwg_Data *data, Dwg_Entity_ATTRIB *entity, Attribute *
     }
 }
 
-static void loadAttributes(Dwg_Data *data, Dwg_Entity_INSERT *insertEntity,
-                           DeskbotInsert *insert, Attribute *attribute) {
+static void loadAttributes(Dwg_Data *data, Dwg_Entity_INSERT *insertEntity, Attribute *attribute) {
     for (int j = 0; j < insertEntity->num_owned; j++) {
         Dwg_Object *object = insertEntity->attribs[j]->obj;
         Dwg_Entity_ATTRIB *attrib = object->tio.entity->tio.ATTRIB;
@@ -188,7 +199,7 @@ static void loadPolyLines(Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonL
         Dwg_Object *ownerObj = header->entities[j]->obj;
         switch (ownerObj->fixedtype) {
             case DWG_TYPE_POLYLINE_2D: {
-                fprintf(stderr, "checking entity of type POLYLINE_2D\n");
+//                fprintf(stderr, "checking entity of type POLYLINE_2D\n");
                 Dwg_Entity_POLYLINE_2D *entity = ownerObj->tio.entity->tio.POLYLINE_2D;
                 if (layerNamesWithPrefix(*entity, seatLayer, roomLayer)) {
                     loadVertex(data, entity, polygonList, insert, ownerObj->handle);
@@ -198,7 +209,7 @@ static void loadPolyLines(Dwg_Object_BLOCK_HEADER *header, PolygonList *polygonL
             }
                 break;
             case DWG_TYPE_LWPOLYLINE: {
-                fprintf(stderr, "checking entity of type LWPOLYLINE\n");
+//                fprintf(stderr, "checking entity of type LWPOLYLINE\n");
                 Dwg_Entity_LWPOLYLINE *entity = ownerObj->tio.entity->tio.LWPOLYLINE;
                 if (layerLWNamesWithPrefix(*entity, seatLayer, roomLayer)) {
                     loadLWVertex(data, entity, polygonList, insert, ownerObj->handle);
@@ -243,10 +254,9 @@ void loadDeskbotData(Dwg_Data *data, const char *seatLayer, const char *roomLaye
                 Attribute attribute;
                 attribute.blockName = header->name;
                 DeskbotInsert insert;
-                loadAttributes(data, insertEntity, &insert, &attribute);
+                loadAttributes(data, insertEntity, &attribute);
                 insert.insertPoint = insertEntity->ins_pt;
-                loadPolyLines(header, &polygonList, seatLayer, roomLayer,
-                              insert, data);
+                loadPolyLines(header, &polygonList, seatLayer, roomLayer, insert, data);
                 insertData(&deskbotData, &attribute, &polygonList);
             }
         }

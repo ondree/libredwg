@@ -124,10 +124,10 @@ int main(int argc, char *argv[]) {
     Dwg_Data dwg;
     const char *fmt = NULL;
     const char *outfile = NULL;
-//    const char *seatLayer = "Y";
-//    const char *roomLayer = "Z";
-    const char *seatLayer = "150504";
-    const char *roomLayer = "STRABAG Fl";
+    const char *seatLayer = "Y";
+    const char *roomLayer = "Z";
+//    const char *seatLayer = "150504";
+//    const char *roomLayer = "STRABAG Fl";
     int has_v = 0;
     int force_free = 0;
     int c;
@@ -140,18 +140,19 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_GETOPT_LONG
     int option_index = 0;
     static struct option long_options[]
-            = {{"verbose",    1, &opts, 1}, // optional
-               {"format",     1, 0,     'O'},
-               {"file",       1, 0,     'o'},
-               {"rooms",      1, 0,     'R'},
-               {"seats",      1, 0,     'S'},
-               {"labels",     1, 0,     'L'},
-               {"help",       0, 0,     0},
-               {"version",    0, 0,     0},
-               {"force-free", 0, 0,     0},
+            = {{"verbose", 1, &opts, 1}, // optional
+               {"format", 1, 0, 'O'},
+               {"file", 1, 0, 'o'},
+               {"rooms", 1, 0, 'R'},
+               {"seats", 1, 0, 'S'},
+               {"labels", 1, 0, 'L'},
+               {"help", 0, 0, 0},
+               {"version", 0, 0, 0},
+               {"force-free", 0, 0, 0},
                {"base-layer", 1, &opts, 1},
-               {"file-name",  1, &opts, 0},
-               {NULL,         0, NULL,  0}};
+               {"file-name", 1, &opts, 0},
+               {"scale", 1, 0, 'q'},
+               {NULL, 0, NULL, 0}};
 #endif
 
 // --------------------Handle arguments----------------------------------
@@ -161,7 +162,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:q:", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v::O:o:hi")) != -1)
@@ -216,6 +217,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'R':
                 roomLayer = optarg;
+                break;
+            case 'q':
+                vector_point_scale = atoi(optarg);
                 break;
             case 'o':
                 outfile = optarg;
