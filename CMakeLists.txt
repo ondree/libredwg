@@ -175,7 +175,7 @@ target_include_directories(redwg PUBLIC
 link_libraries(redwg -lm ${CMAKE_THREAD_LIBS_INIT})
 
 if(NOT LIBREDWG_LIBONLY)
-  set(executables_TARGETS dwgread dwgread_test dwg2dxf dwggrep dwglayers dwgbmp dwg2SVG)
+  set(executables_TARGETS dwgread dwgread_test dwg2dxf dwggrep dwglayers dwgbmp dwg2SVG dwg2SVG_our)
   add_executable(dwgread programs/dwgread.c)
   add_executable(dwg2dxf programs/dwg2dxf.c)
   if(NOT LIBREDWG_DISABLE_WRITE)
@@ -189,6 +189,7 @@ if(NOT LIBREDWG_LIBONLY)
   add_executable(dwgread_test programs/dwgread_test.c programs/deskbot_reader.c programs/deskbot_printer.c programs/dwg_bounding_box.c)
   add_executable(dwgbmp programs/dwgbmp.c)
   add_executable(dwg2SVG programs/dwg2SVG.c programs/escape.c programs/geom.c programs/dwg_bounding_box.c)
+  add_executable(dwg2SVG_our programs/dwg2SVG_our.c programs/escape.c programs/geom.c programs/dwg_bounding_box.c)
 
   if (HAVE_PCRE2_H)
     if(HAVE_PCRE2_16)

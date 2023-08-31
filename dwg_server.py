@@ -78,9 +78,14 @@ async def parse_image(request: Request):
 
     if not dwg_layers:
         execute = f'dwg2SVG -b {core_layer} {original_file_path} >{target_file_path}'
+
+    point_vector_scale = request.form.get("scale")
+    if not point_vector_scale:
+        point_vector_scale = 1
+        
     else:
         joined_layers = ":".join(dwg_layers.split(','))
-        execute = f'dwg2SVG -l {joined_layers} -b {core_layer} {original_file_path} >{target_file_path}'
+        execute = f'dwg2SVG_our -q {point_vector_scale} -l {joined_layers} -b {core_layer} {original_file_path} >{target_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
