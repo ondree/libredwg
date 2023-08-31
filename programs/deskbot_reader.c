@@ -33,6 +33,7 @@
 char *base_layer;
 char *default_base_layer = "080202_BEAUGEB_AWAND";
 int vector_point_scale = 1;
+int overall_point_scale = 1;
 
 static char *entityTextValue(Dwg_Data *data, BITCODE_TV value) {
     if (data->header.version > R_2007)
@@ -122,8 +123,8 @@ static void loadVertex(Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
                 points[i].y = (max.y - (vertex->point.y + insert.insertPoint.y)) / 100;
                 // points[i].y = (vertex->point.y + insert.insertPoint.y - min.y) / 100;
             } else {
-                points[i].x = (vertex->point.x / vector_point_scale) - min.x;
-                points[i].y = max.y - (vertex->point.y / vector_point_scale);
+                points[i].x = ((vertex->point.x / vector_point_scale) - min.x) * overall_point_scale;
+                points[i].y = (max.y - (vertex->point.y / vector_point_scale)) * overall_point_scale;
             }
         }
     }

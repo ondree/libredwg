@@ -152,6 +152,7 @@ int main(int argc, char *argv[]) {
                {"base-layer", 1, &opts, 1},
                {"file-name", 1, &opts, 0},
                {"scale", 1, 0, 'q'},
+               {"pscals", 1, 0, 'm'},
                {NULL, 0, NULL, 0}};
 #endif
 
@@ -162,7 +163,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:q:", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:q:m:", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v::O:o:hi")) != -1)
@@ -220,6 +221,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'q':
                 vector_point_scale = atoi(optarg);
+                break;
+            case 'm':
+                overall_point_scale = atoi(optarg);
                 break;
             case 'o':
                 outfile = optarg;
