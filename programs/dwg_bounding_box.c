@@ -59,19 +59,6 @@ static void limitsForLayer(Dwg_Data *data, char *layer) {
                 Dwg_Entity_LINE *line = object.tio.entity->tio.LINE;
                 BITCODE_TV layerName = line->parent->layer->obj->tio.object->tio.LAYER->name;
                 if (strcmp(layerName, layer) == 0) {
-                    if (line->start.x > 150) {
-                        fprintf(stderr, "This is outside");
-                    }
-                    if (line->start.x < 0) {
-                        fprintf(stderr, "This is outside");
-                    }
-                    if (line->end.y > 150) {
-                        fprintf(stderr, "This is outside");
-                    }
-                    if (line->end.y < 0) {
-                        fprintf(stderr, "This is outside");
-                    }
-
                     calculateLimitsFor(line->start, &xMin, &xMax, &yMin, &yMax);
                     calculateLimitsFor(line->end, &xMin, &xMax, &yMin, &yMax);
                 }

@@ -62,6 +62,7 @@
 
 static int opts = 0;
 static int mspace = 0; // only mspace, even when pspace is defined
+int vector_point_scale = 1;
 Dwg_Data g_dwg;
 double model_xmin, model_ymin, model_xmax, model_ymax;
 double page_width, page_height, scale;
@@ -111,11 +112,11 @@ static int help(void) {
 }
 
 static double transform_X(double x) {
-    return x - model_xmin;
+    return x / vector_point_scale - model_xmin;
 }
 
 static double transform_Y(double y) {
-    return page_height - (y - model_ymin);
+    return page_height - (y / vector_point_scale - model_ymin);
 }
 
 static bool isnan_2BD(BITCODE_2BD pt) {
@@ -158,14 +159,15 @@ static bool entity_invisible(Dwg_Object *obj) {
         return false;
     _obj = layer->tio.object->tio.LAYER;
     // pre-r13 it is set if the layer color is negative
-    return _obj->on == 0 ? isLayerInvisible(_obj) : false;
+//    return _obj->on == 0 ? isLayerInvisible(_obj) : false;
+    return isLayerInvisible(_obj);
 }
 
 static double entity_lweight(Dwg_Object_Entity *ent) {
     // TODO: resolve BYLAYER 256, see above.
     // stroke-width:%0.1fpx. 100th of a mm
     int lw = dxf_cvt_lweight(ent->linewt);
-    return lw < 0 ? 30.0 : (double) (lw * 0.1);
+    return lw < 1 ? 30.0 : (double) (lw * 0.1);
 }
 
 static char *entity_color(Dwg_Object_Entity *ent) {
@@ -856,6 +858,7 @@ int main(int argc, char *argv[]) {
                {"version",    0, 0,     0},
                {"layers",     1, &opts, 0},
                {"core-layer", 1, &opts, 0},
+               {"scale",      1, 0,   'q'},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -864,7 +867,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m:l::h:b", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m:l::h:b:q:", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)
@@ -939,6 +942,9 @@ int main(int argc, char *argv[]) {
                 if (!memcmp(argv[i], "-b", 2)) {
                     core_layer = argv[i + 1];
                 }
+                break;
+            case 'q':
+                vector_point_scale = atoi(optarg);
                 break;
             case 'h':
                 return help();
