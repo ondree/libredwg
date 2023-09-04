@@ -9,6 +9,7 @@
 char final_file_name[255];
 char *file_name;
 char *default_file_name;
+int insertPointIndex = 1;
 
 static void
 printPolygonData(PolygonList polygonList) {
@@ -85,7 +86,6 @@ void printSeatCSV(FILE *seatFile, Seat seat) {
         Polygon polygon = seat.polygons.array[i];
         if (polygon.pointCount == 4) {
             // Insert point is stored as second item
-            int insertPointIndex = 1;
             BITCODE_2BD point = polygon.points[insertPointIndex];
             char *enabled = "false";
             char *equipment = "[]";

@@ -123,8 +123,10 @@ static void loadVertex(Dwg_Data *data, Dwg_Entity_POLYLINE_2D *entity,
                 points[i].y = (max.y - (vertex->point.y + insert.insertPoint.y)) / 100;
                 // points[i].y = (vertex->point.y + insert.insertPoint.y - min.y) / 100;
             } else {
-                points[i].x = ((vertex->point.x / vector_point_scale) - min.x) * overall_point_scale;
-                points[i].y = (max.y - (vertex->point.y / vector_point_scale)) * overall_point_scale;
+                points[i].x =
+                        (((vertex->point.x + insert.insertPoint.x) / vector_point_scale) - min.x) * overall_point_scale;
+                points[i].y =
+                        (max.y - ((vertex->point.y + insert.insertPoint.y) / vector_point_scale)) * overall_point_scale;
             }
         }
     }
@@ -150,8 +152,8 @@ static void loadLWVertex(Dwg_Data *data, Dwg_Entity_LWPOLYLINE *entity,
             points[i].x = (point.x + insert.insertPoint.x - min.x) / 100;
             points[i].y = (max.y - (point.y + insert.insertPoint.y)) / 100;
         } else {
-            points[i].x = (point.x / vector_point_scale) - min.x;
-            points[i].y = max.y - (point.y / vector_point_scale);
+            points[i].x = (((point.x + insert.insertPoint.x) / vector_point_scale) - min.x) * overall_point_scale;
+            points[i].y = (max.y - ((point.y + insert.insertPoint.y) / vector_point_scale)) * overall_point_scale;
         }
     }
     Polygon polygon;

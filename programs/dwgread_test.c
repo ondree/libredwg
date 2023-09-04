@@ -153,6 +153,7 @@ int main(int argc, char *argv[]) {
                {"file-name", 1, &opts, 0},
                {"scale", 1, 0, 'q'},
                {"pscals", 1, 0, 'm'},
+               {"inser-point", 1, &opts, 1},
                {NULL, 0, NULL, 0}};
 #endif
 
@@ -163,7 +164,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:q:m:", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v::O:o:h:R:S:L:b:f:q:m:i:", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v::O:o:hi")) != -1)
@@ -225,6 +226,8 @@ int main(int argc, char *argv[]) {
             case 'm':
                 overall_point_scale = atoi(optarg);
                 break;
+            case 'i':
+                insertPointIndex = atoi(optarg) % 4;
             case 'o':
                 outfile = optarg;
                 if (!fmt && outfile != NULL) {

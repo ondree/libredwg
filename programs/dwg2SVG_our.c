@@ -66,6 +66,7 @@ int vector_point_scale = 1;
 Dwg_Data g_dwg;
 double model_xmin, model_ymin, model_xmax, model_ymax;
 double page_width, page_height, scale;
+double lweight = 0.1;
 
 static void output_SVG(Dwg_Data *dwg);
 
@@ -73,6 +74,7 @@ static void output_SVG(Dwg_Data *dwg);
 char **forced_layers;
 int forced_layers_size;
 char *core_layer = NULL;
+bool defs = true;
 char *default_core_layer = "080202_BEAUGEB_AWAND";
 static char *forced_color_tint = (char *) "black";
 bool force_custom_tint = false;
@@ -167,7 +169,7 @@ static double entity_lweight(Dwg_Object_Entity *ent) {
     // TODO: resolve BYLAYER 256, see above.
     // stroke-width:%0.1fpx. 100th of a mm
     int lw = dxf_cvt_lweight(ent->linewt);
-    return lw < 1 ? 30.0 : (double) (lw * 0.1);
+    return lw < 1 ? (defs ? 30.0 : lweight) : (double) (lw * 0.1);
 }
 
 static char *entity_color(Dwg_Object_Entity *ent) {
@@ -832,12 +834,16 @@ static void output_SVG(Dwg_Data *dwg) {
                 ref); // how many paper-space entities we did print
     if (!num && (ref = dwg_model_space_ref(dwg)))
         output_BLOCK_HEADER(ref);
-    printf("\t<defs>\n");
+    if (defs) {
+        printf("\t<defs>\n");
+    }
     for (i = 0; i < dwg->block_control.num_entries; i++) {
         if (dwg->block_control.entries && (ref = dwg->block_control.entries[i]))
             output_BLOCK_HEADER(ref);
     }
-    printf("\t</defs>\n");
+    if (defs) {
+        printf("\t</defs>\n");
+    }
     printf("</svg>\n");
     fflush(stdout);
 }
@@ -858,7 +864,9 @@ int main(int argc, char *argv[]) {
                {"version",    0, 0,     0},
                {"layers",     1, &opts, 0},
                {"core-layer", 1, &opts, 0},
-               {"scale",      1, 0,   'q'},
+               {"scale",      1, 0,     'q'},
+               {"defs",       1, &opts, 'd'},
+               {"pptx",       1, &opts, 'p'},
                {NULL,         0, NULL,  0}};
 #endif
 
@@ -867,7 +875,7 @@ int main(int argc, char *argv[]) {
 
     while
 #ifdef HAVE_GETOPT_LONG
-            ((c = getopt_long(argc, argv, ":v:m:l::h:b:q:", long_options, &option_index))
+            ((c = getopt_long(argc, argv, ":v:m:l::h:b:q:d:p:", long_options, &option_index))
              != -1)
 #else
         ((c = getopt (argc, argv, ":v:m::hi")) != -1)
@@ -945,6 +953,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 'q':
                 vector_point_scale = atoi(optarg);
+                break;
+            case 'd':
+                defs = optarg[0] == 't';
+                break;
+            case 'p':
+                lweight = atof(optarg);
                 break;
             case 'h':
                 return help();

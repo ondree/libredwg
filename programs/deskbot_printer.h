@@ -13,6 +13,7 @@
 extern char final_file_name[255];
 extern char *file_name;
 extern char *default_file_name;
+extern int insertPointIndex;
 
 void printDeskbotData(DeskbotData data);
 
