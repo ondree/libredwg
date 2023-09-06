@@ -5,6 +5,7 @@ import sys
 
 from sanic import Request, text, json, file
 from sanic import Sanic
+from cairosvg import svg2png
 
 
 def print_hi(name):
@@ -76,16 +77,26 @@ async def parse_image(request: Request):
     if not core_layer:
         core_layer = '080202_BEAUGEB_AWAND'  # defualt layer for boundaries
 
-    if not dwg_layers:
-        execute = f'dwg2SVG -b {core_layer} {original_file_path} >{target_file_path}'
-
     point_vector_scale = request.form.get("scale")
     if not point_vector_scale:
         point_vector_scale = 1
-        
+
+    defs_input = request.form.get("defs")
+
+    if not defs_input:
+        defs_input = true
+
+    defs_set = 't' if (defs_input == true) else 'f'
+
+    point_lweight = request.form.get("lweight")
+    if not point_lweight:
+        point_lweight = '1.0'
+
+    if not dwg_layers:
+        execute = f'dwg2SVG_our -b {core_layer} {original_file_path} >{target_file_path}'
     else:
         joined_layers = ":".join(dwg_layers.split(','))
-        execute = f'dwg2SVG_our -q {point_vector_scale} -l {joined_layers} -b {core_layer} {original_file_path} >{target_file_path}'
+        execute = f'dwg2SVG_our -q {point_vector_scale} -d {defs_set} -p {point_lweight} -l {joined_layers} -b {core_layer} {original_file_path} >{target_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 
@@ -96,7 +107,9 @@ async def parse_image(request: Request):
     if not os.path.exists(target_file_path):
         return text('Internal error: Result is missing', status=501)
 
-    return await file(target_file_path, filename=file_name + '.svg')
+    svg2png(url=target_file_path, write_to=file_name + '.png')
+
+    return await file(original_file_path + '.png', filename=file_name + '.png')
 
 
 @app.post('/parse')
@@ -133,7 +146,15 @@ async def parse_file(request: Request):
     if not seat_layer:
         seat_layer = 'STRABAG Fl'
 
-    execute = f'dwgread_test -b ${core_layer} -R {room_layer} -S {seat_layer} -q {point_scale} -f {target_file_path} {original_file_path}'
+    overall_point_scale = request.form.get("overall_point_scale")
+    if not overall_point_scale:
+        overall_point_scale = 1.0
+
+    insert_point = request.form.get("insert_point")
+    if not insert_point:
+        insert_point = 1
+
+    execute = f'dwgread_test -m {overall_point_scale} -i {insert_point} -b ${core_layer} -R {room_layer} -S {seat_layer} -q {point_scale} -f {target_file_path} {original_file_path}'
 
     print(f'execute: {execute}', file=sys.stderr)
 

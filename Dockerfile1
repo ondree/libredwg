@@ -58,6 +58,7 @@ RUN apt install python3-pip -y
 RUN python3 -m pip install --upgrade pip --break-system-packages
 
 RUN python3 -m pip install sanic==23.3.0 --break-system-packages
+RUN python3 -m pip install cairosvg
 
 COPY *.py /
 COPY runServer.sh /
