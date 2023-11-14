@@ -22,14 +22,14 @@ AM_CFLAGS   = -I$(top_srcdir)/include -I$(top_srcdir)/src $(WARN_CFLAGS)
 LDADD       = $(top_builddir)/src/libredwg.la
 CPPCHECK    = @CPPCHECK@
 
-bin_PROGRAMS    = dwgread
+bin_PROGRAMS    = dwgread dwgread_test
 noinst_PROGRAMS =
-dist_man1_MANS  = $(srcdir)/dwgread.1
+dist_man1_MANS  = $(srcdir)/dwgread.1 $(srcdir)/dwgread_test.1
 if !DISABLE_DXF
-bin_PROGRAMS   += dwgbmp dwg2dxf dwg2SVG dwglayers dwggrep
+bin_PROGRAMS   += dwgbmp dwg2dxf dwg2SVG dwg2SVG_our dwglayers dwggrep
 dist_bin_SCRIPTS = dwgfilter
 dist_man1_MANS += $(srcdir)/dwgbmp.1 $(srcdir)/dwg2dxf.1 \
-	          $(srcdir)/dwg2SVG.1 $(srcdir)/dwglayers.1 \
+	          $(srcdir)/dwg2SVG.1 $(srcdir)/dwg2SVG_our.1 $(srcdir)/dwglayers.1 \
 		  $(srcdir)/dwggrep.1 $(srcdir)/dwgfilter.1
 endif
 
@@ -43,10 +43,12 @@ endif
 endif
 
 dwgread_SOURCES    = dwgread.c
+dwgread_test_SOURCES=dwgread_test.c
 dwgbmp_SOURCES     = dwgbmp.c
 dwg2dxf_SOURCES    = dwg2dxf.c
 dwglayers_SOURCES  = dwglayers.c
 dwg2SVG_SOURCES    = dwg2SVG.c escape.c geom.c dwg_bounding_box.c
+dwg2SVG_our_SOURCES= dwg2SVG_our.c escape.c geom.c dwg_bounding_box.c
 dwggrep_SOURCES    = dwggrep.c
 dwggrep_CFLAGS     = $(AM_CFLAGS) $(CFLAGS) $(PCRE2_CFLAGS)
 dwggrep_LDADD      = $(LDADD) $(PCRE2_LIBS)

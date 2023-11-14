@@ -125,6 +125,7 @@ fi
 %license COPYING
 %doc README AUTHORS NEWS doc/LibreDWG.pdf
 %{_bindir}/dwg2SVG
+%{_bindir}/dwg2SVG_our
 %{_bindir}/dwg2dxf
 %{_bindir}/dwg2ps
 %{_bindir}/dwgbmp
@@ -133,6 +134,7 @@ fi
 %{_bindir}/dwggrep
 %{_bindir}/dwglayers
 %{_bindir}/dwgread
+%{_bindir}/dwgread_test
 %{_bindir}/dwgrewrite
 %{_bindir}/dwgwrite
 %{_bindir}/dxf2dwg
@@ -140,6 +142,7 @@ fi
 %{_libdir}/libredwg.so.0
 %{_libdir}/libredwg.so.0.0.12
 %{_mandir}/man1/dwg2SVG.1.gz
+%{_mandir}/man1/dwg2SVG_our.1.gz
 %{_mandir}/man1/dwg2dxf.1.gz
 %{_mandir}/man1/dwg2ps.1.gz
 %{_mandir}/man1/dwgadd.1.gz
@@ -149,6 +152,7 @@ fi
 %{_mandir}/man1/dwggrep.1.gz
 %{_mandir}/man1/dwglayers.1.gz
 %{_mandir}/man1/dwgread.1.gz
+%{_mandir}/man1/dwgread_test.1.gz
 %{_mandir}/man1/dwgrewrite.1.gz
 %{_mandir}/man1/dwgwrite.1.gz
 %{_mandir}/man1/dxf2dwg.1.gz
