@@ -182,6 +182,9 @@ async def download_seats(request: Request):
     if not file_name:
         return json({'message': 'No file selected!', 'success': False})
 
+    if file_name.split('.')[-1] == 'dwg':
+        file_name = load_file_name(file_name)
+
     request_file_name = f'{file_name}_seats.csv'
 
     target_file_path = os.path.join(os.getcwd(), request_file_name)
@@ -198,6 +201,9 @@ async def download_rooms(request: Request):
 
     if not file_name:
         return json({'message': 'No file selected!', 'success': False})
+
+    if file_name.split('.')[-1] == 'dwg':
+        file_name = load_file_name(file_name)
 
     request_file_name = f'{file_name}_rooms.csv'
 
